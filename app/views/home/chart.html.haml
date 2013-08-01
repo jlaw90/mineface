@@ -1,0 +1,43 @@
+-chart_data = get_data(@start, @interval)
+.span12
+  :javascript
+      $(function(){
+          new Highcharts.Chart({
+            chart: {
+              renderTo: "#{@title.downcase}"
+            }, title: {
+              text: "#{@title}"
+            }, xAxis: {
+              type: "datetime"
+            }, yAxis: {
+              title: {
+                text: 'MHash/s'
+              }
+            }, series: [
+              {
+                pointInterval: #{@interval.to_i * 1000},
+                pointStart: #{@start.to_i * 1000},
+                data: [
+                  #{chart_data.map { |time, value| "[#{time.to_i * 1000}, #{value}]"}.join ', '}
+                ]
+              }
+            ], legend: {
+              enabled: false
+            }, tooltip: {
+              formatter: function() {
+                var val = this.y;
+                var pres = ['M', 'G', 'T', 'P'];
+                var pre = 0;
+                while(val > 1000) {
+                  pre++;
+                  val = val / 1000.0;
+                }
+                val = val.toFixed(2);
+                return Highcharts.dateFormat("%B %e %Y %H:%m", this.x) + ', <b>' + val + pres[pre] + 'hash/s';
+              }
+            }, exporting: {
+              enabled: true
+            }
+          });
+      });
+  .chart{id: @title.downcase}

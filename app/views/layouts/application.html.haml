@@ -1,0 +1,38 @@
+!!!
+%html
+  %head
+    %title=app_name
+    =stylesheet_link_tag 'application', media: :all
+    =javascript_include_tag 'application', params[:controller]
+    =csrf_meta_tags
+  %body
+    .navbar.navbar-fixed-top
+      .navbar-inner
+        .container
+          .row-fluid
+            .span12
+              %a.brand=app_name
+              %ul.nav
+                %li.active
+                  %a{href: '#'} Home
+    .container
+      .row-fluid
+        .span12
+          =yield
+
+    %footer
+      .container
+        .row-fluid
+          .span12.text-center
+            =app_name
+            is free software created by James Lawrence for the community in his free time.  If you like it,
+            = link_to('donate to 17UQa8vbadrw6NzqZfbgi2WdQDHqjWma7N', 'bitcoin:17UQa8vbadrw6NzqZfbgi2WdQDHqjWma7N')
+        .row-fluid
+          .span12.text-center
+            =link_to('Message Me', '#email')
+            |
+            =link_to('Hire Me', '#linkedin')
+            |
+            =link_to('Peruse Me', '#sqrt4')
+            |
+            = link_to('Fork Me', '#github')

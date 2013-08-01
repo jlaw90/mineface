@@ -1,0 +1,66 @@
+.row-fluid
+  .span12.text-right
+    =select('chart', 'chart', @charts.each_with_index.map{|d,i| [d[0], i]})
+    .chart_area
+    :javascript
+      charts = #{@charts.map{|d| {title: d[0], interval: d[1], start: d[2]}}.to_json};
+      chart = $('#chart_chart');
+      function refreshChart() {
+        // Todo: use the API to load more data instead of reloading the element
+        $('.chart_area').load('/chart', charts[chart.val()]);
+      }
+
+      chart.change(function() {
+        refreshChart();
+        sset('selected_chart', chart.val());
+      });
+
+      addRefreshFunction(refreshChart);
+
+      chart.val(sget('selected_chart', 0));
+
+.row-fluid
+  / First off, a simple table showing runtime statistics
+  .span12
+    %h3 Statistics
+    %table.table.table-striped.table-bordered
+      %thead
+        %tr
+          %th Version
+          %th Cgminer Version
+          %th Server uptime
+          %th Cgminer uptime
+          %th Best share
+          %th Donated minutes
+        %tr
+          %td=app_version
+          %td Todo
+          %td Todo
+          %td Todo
+          %td Todo
+          %td Todo
+
+.row-fluid
+  .span12
+    %h3 Pool statistics
+    / Pool stats
+    %table.table.table-striped.table-bordered
+      %thead
+        %tr
+          %th URL
+          %th User
+          %th Status
+          %th Priority
+          %th Getworks
+          %th Accepted
+          %th Rejected
+          %th Discared
+          %th Total
+          %th Last share
+          %th Diff1 Shares
+          %th Diff Accept
+          %th Diff Reject
+          %th Last Share Difficulty
+          %th Best Share
+
+  / Device stats
