@@ -36,3 +36,16 @@
             =link_to('Peruse Me', '#sqrt4')
             |
             = link_to('Fork Me', '#github')
+        .row-fluid
+          .span12.text-center
+            %small
+              Page rendered in
+              =elapsed_time
+              seconds.
+          / Debugging ENV
+          .span12.text-center
+            %table.table.table-striped
+              -ENV.each do |k,v|
+                %tr
+                  %td=k
+                  %td=v

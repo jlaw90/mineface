@@ -17,7 +17,7 @@
 @import "twitter/bootstrap/responsive";
 
 body {
-    padding-top: 60px;
+  padding-top: 60px;
 }
 
 footer {
@@ -25,5 +25,8 @@ footer {
     margin-top: 40px;
     border-top: 1px solid $grayLighter;
     color: $grayLight;
+    small {
+      color: $grayLighter;
+    }
   }
 }

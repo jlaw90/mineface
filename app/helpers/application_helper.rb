@@ -11,6 +11,10 @@ module ApplicationHelper
     "0.1a"
   end
 
+  def elapsed_time
+    Time.now - @start_time
+  end
+
   class Cgminer # A very simple cgminer api that caches results
     require 'socket'
     require 'json'
@@ -24,7 +28,7 @@ module ApplicationHelper
     end
 
     def method_missing(name, *args)
-      req = { :command => name, :parameter => args}.to_json
+      req = {:command => name, :parameter => args}.to_json
       return @cache[req] if @cache.has_key?(req) # Cached?
 
       s = TCPSocket.open(@host, @port)
