@@ -30,3 +30,13 @@ footer {
     }
   }
 }
+
+.ajax_overlay {
+  z-index: 999;
+}
+
+.ajax_loader {
+  background: image_url("ajax-loader.gif") no-repeat center center transparent;
+  width: 100%;
+  height: 100%;
+}

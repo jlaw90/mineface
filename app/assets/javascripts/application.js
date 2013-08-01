@@ -84,5 +84,48 @@ function sset(key, val) {
 }
 
 $(function () {
+    $.fn.loading = function (options) {
+        t = $(this);
+        var defaults = {
+            bgColor: '#999',
+            duration: 800,
+            opacity: 0.3,
+            classOveride: 'loading'
+        }
+        t.options = jQuery.extend(defaults, options);
+        t.remove = function () {
+            var overlay = t.children(".ajax_overlay");
+            if (overlay.length) {
+                overlay.fadeOut(t.options.classOveride, function () {
+                    overlay.remove();
+                });
+            }
+        }
+        // Delete any other loaders
+        t.remove();
+        // Create the overlay
+        var overlay = $('<div></div>').css({
+            'background-color': t.options.bgColor,
+            'opacity': t.options.opacity,
+            'width': t.width(),
+            'height': t.height(),
+            'position': 'absolute',
+            'top': '0px',
+            'left': '0px',
+            'z-index': 99999
+        }).addClass('ajax_overlay');
+        // add an overiding class name to set new loader style
+        if (t.options.classOveride) {
+            overlay.addClass(t.options.classOveride);
+        }
+        // insert overlay and loader into DOM
+        t.append(overlay.append($('<div></div>').addClass('ajax_loader')).fadeIn(t.options.duration));
+    };
+
+    $.fn.finishedLoading = function () {
+        t = $(this);
+        t.remove();
+    };
+
     setTimeout(refresh, 0);
 });
