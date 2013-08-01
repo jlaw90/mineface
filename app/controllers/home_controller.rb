@@ -21,6 +21,11 @@ class HomeController < ApplicationController
     }
   end
 
+  def overview
+    @speed = Time.now.to_i % 60
+    render layout: false
+  end
+
   private
 
   def get_data(start, interval)

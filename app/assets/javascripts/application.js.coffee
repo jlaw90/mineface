@@ -5,6 +5,8 @@
 window._refreshFuncs = []
 window._refreshCur = 0
 
+overview_refresh = 5
+
 window.addRefreshFunction = (funcy) ->
   _refreshFuncs.push(funcy)
 
@@ -45,29 +47,37 @@ window.sset = (key, val) ->
   return unless supports_html5_storage()
   localStorage[key] = val
 
+window.bootstrapAlert = (id, message, title = null, type = null, block = false) ->
+  $("\##{id}").remove()
+  container = $('#alert_container')
+  alert = $('<div></div>')
+  alert.attr('id', id)
+  alert.addClass('alert')
+  alert.addClass("alert-#{type}") if type?
+  alert.addClass("alert-block") if block?
+
+  close = $('<button></button>')
+  close.addClass('close')
+  close.attr('data-dismiss', 'alert')
+  close.html('&times;')
+  alert.append(close)
+
+  header = null
+  if title != null
+    header = $('<h4></h4>')
+    header.text(title)
+    alert.append(header)
+  alert.append(message)
+  alert.hide()
+  container.append(alert)
+  alert.fadeIn()
+
+
+window.updateOverview = (time = 0) ->
+  return unless time % overview_refresh == 0
+  $('#overview').load('/overview')
+
+
+addRefreshFunction(window.updateOverview)
 $ ->
-  window.bootstrapAlert = (id, message, title = null, type = null) ->
-    $("\##{id}").remove()
-    container = $('#alert_container')
-    alert = $('<div></div>')
-    alert.attr('id', id)
-    alert.addClass('alert')
-    alert.addClass("alert-#{type}") if type?
-
-    close = $('<button></button>')
-    close.addClass('close')
-    close.attr('data-dismiss', 'alert')
-    close.html('&times;')
-    alert.append(close)
-
-    header = null
-    if title != null
-      header = $('<h4></h4>')
-      header.text(title)
-      alert.append(header)
-    alert.append(message)
-    alert.hide()
-    container.append(alert)
-    alert.fadeIn()
-
   setTimeout(refresh, 0);

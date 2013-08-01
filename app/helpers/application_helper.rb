@@ -11,8 +11,22 @@ module ApplicationHelper
     "0.1a"
   end
 
+  def windows?
+    not (RUBY_PLATFORM =~ /(win|w)32$/).nil?
+  end
+
   def elapsed_time
     Time.now - @start_time
+  end
+
+  def mhash_to_s(speed)
+    units = %w(M G T P)
+    unit = 0
+    while speed > 1000
+      speed = speed.to_f / 1000.0
+      unit += 1
+    end
+    "#{speed} #{units[unit]}h/s"
   end
 
   class Cgminer # A very simple cgminer api that caches results

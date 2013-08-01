@@ -4,9 +4,10 @@ working_directory "/opt/miner/rails"
 listen "/opt/miner/tmp/unicorn.sock", :backlog => 64
 timeout 30
 pid "/opt/miner/tmp/unicorn.pid"
-
 stderr_path "/opt/miner/log/unicorn.stderr.log"
 stdout_path "/opt/miner/log/unicorn.stdout.log"
+
+load File.expand_path('setup_load_paths.rb', File.dirname(__FILE__))
 
 preload_app true
 GC.respond_to?(:copy_on_write_friendly=) and
