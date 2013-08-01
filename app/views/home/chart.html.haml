@@ -8,15 +8,16 @@
             }, title: {
               text: "#{@title}"
             }, xAxis: {
-              type: "datetime"
+              type: "datetime",
+              min: #{@start.to_i*1000},
+              max: new Date().getTime(),
             }, yAxis: {
+              min: 0,
               title: {
                 text: 'MHash/s'
               }
             }, series: [
               {
-                pointInterval: #{@interval.to_i * 1000},
-                pointStart: #{@start.to_i * 1000},
                 data: [
                   #{chart_data.map { |time, value| "[#{time.to_i * 1000}, #{value}]"}.join ', '}
                 ]
