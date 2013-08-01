@@ -5,10 +5,14 @@
 #= require modules/exporting
 
 _chartRefreshInterval = 30
+_chartRefreshTime = 0
 
 $ ->
   window.refreshChart = (time = 0, manual = false)->
-    return unless time % _chartRefreshInterval == 0
+    dif = (time - _chartRefreshTime) % _chartRefreshInterval
+    $('#chart_refresh').text("refresh (#{dif}s)")
+    return unless dif == 0
+    _chartRefreshTime = time
     chart.showLoading() if manual
     chartdata = charts[chartsel.val()]
     $.get('/chart', chartdata,(data, status, xhr) ->
