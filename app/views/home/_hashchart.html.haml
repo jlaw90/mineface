@@ -1,28 +1,19 @@
--chart_data = get_data(@start, @interval)
 .span12
   :javascript
       $(function(){
-          new Highcharts.Chart({
+          chart = new Highcharts.Chart({
             chart: {
-              renderTo: "#{@title.downcase}"
+              renderTo: 'hashchart'
             }, title: {
-              text: "#{@title}"
+              text: ""
             }, xAxis: {
-              type: "datetime",
-              min: #{@start.to_i*1000},
-              max: new Date().getTime(),
+              type: "datetime"
             }, yAxis: {
               min: 0,
               title: {
                 text: 'MHash/s'
               }
-            }, series: [
-              {
-                data: [
-                  #{chart_data.map { |time, value| "[#{time.to_i * 1000}, #{value}]"}.join ', '}
-                ]
-              }
-            ], legend: {
+            }, legend: {
               enabled: false
             }, tooltip: {
               formatter: function() {
@@ -34,11 +25,11 @@
                   val = val / 1000.0;
                 }
                 val = val.toFixed(2);
-                return Highcharts.dateFormat("%B %e %Y %H:%m", this.x) + ', <b>' + val + pres[pre] + 'hash/s';
+                return Highcharts.dateFormat("%B %e %Y %H:%M", this.x) + ', <b>' + val + pres[pre] + 'hash/s';
               }
             }, exporting: {
               enabled: true
             }
           });
       });
-  .chart{id: @title.downcase}
+  .chart{id: 'hashchart'}
