@@ -1,11 +1,11 @@
-worker_processes 4
-user "root", "root"
-working_directory "/opt/miner/rails"
-listen "/opt/miner/tmp/unicorn.sock", :backlog => 64
+worker_processes 1
+user 'http', 'http'
+working_directory = '/opt/miner/rails'
+listen "#{working_directory}/tmp/unicorn.sock", :backlog => 64
+pid "#{working_directory}/tmp/unicorn.pid"
+stderr_path "#{working_directory}/logs/unicorn.stderr.log"
+stdout_path "#{working_directory}/logs/unicorn.stdout.log"
 timeout 30
-pid "/opt/miner/tmp/unicorn.pid"
-stderr_path "/opt/miner/log/unicorn.stderr.log"
-stdout_path "/opt/miner/log/unicorn.stdout.log"
 
 preload_app true
 GC.respond_to?(:copy_on_write_friendly=) and
