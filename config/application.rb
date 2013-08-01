@@ -58,5 +58,9 @@ module PiMiner
 
     # Version of your assets, change this if you want to expire all your assets
     config.assets.version = '1.0'
+
+    # Because we use controller specific js and we don't want all jquery queries running on every page, we'll
+    # modify the asset build path a little bit
+    config.assets.precompile += Dir::entries("app/assets/javascripts").map { |f| f[/^(?!application\.).*\.js/] }.compact
   end
 end
