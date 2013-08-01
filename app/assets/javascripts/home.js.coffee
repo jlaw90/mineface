@@ -7,14 +7,9 @@
 _chartRefreshInterval = 30
 
 $ ->
-  window.refreshChart = (time = 0)->
-    dif = time % _chartRefreshInterval
-    $('#chart_refresh').text("refresh (" + (_chartRefreshInterval - dif) + "s)")
-    return unless dif == 0
-    # Todo: use the API to load more data instead of reloading the element
-    carea = $('.chart_area')
-    # Apply to descendant if there...
-    chart.showLoading()
+  window.refreshChart = (time = 0, manual = false)->
+    return unless time % _chartRefreshInterval == 0
+    chart.showLoading() if manual
     chartdata = charts[chartsel.val()]
     $.get('/chart', chartdata,(data, status, xhr) ->
       chart.setTitle({text: data.title })
@@ -28,7 +23,7 @@ $ ->
       bootstrapAlert('chart_err', "#{data.status} #{data.statusText}", 'Failed to load chart data')
 
   chartsel.change ->
-    refreshChart()
+    refreshChart(0, true)
     sset('selected_chart', chartsel.val())
 
   addRefreshFunction(refreshChart)

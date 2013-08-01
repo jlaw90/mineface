@@ -5,7 +5,7 @@
     =select('chart', 'chart', @charts.each_with_index.map{|d,i| [d[0], i]})
     %br
     %small.muted.text-left
-      %a#chart_refresh{onclick:'refreshChart();return false;', href: ''} refresh
+      %a#chart_refresh{onclick:'refreshChart(0,true);return false;', href: ''} refresh
     .chart_area
       = render partial: 'hashchart'
     :javascript
