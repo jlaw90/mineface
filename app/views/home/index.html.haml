@@ -7,7 +7,12 @@
       chart = $('#chart_chart');
       function refreshChart() {
         // Todo: use the API to load more data instead of reloading the element
-        $('.chart_area').load('/chart', charts[chart.val()]);
+        var carea = $('.chart_area');
+        $.get('/chart', charts[chart.val()], function(data, status, xhr) {
+            carea.html(data);
+        }).fail(function(data, status, xhr) {
+            carea.html('<p>FAIL</p>');
+        });
       }
 
       chart.change(function() {
