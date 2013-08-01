@@ -41,11 +41,9 @@
             %small
               Page rendered in
               =elapsed_time
-              seconds.
-          / Debugging ENV
-          .span12.text-center
-            %table.table.table-striped
-              -ENV.each do |k,v|
-                %tr
-                  %td=k
-                  %td=v
+              seconds. |
+
+              Served by
+              =ENV['SERVER_SOFTWARE']
+              ,
+              =ENV['RUBY_VERSION']
