@@ -3,8 +3,8 @@ user 'http', 'http'
 working_directory = '/opt/miner/rails'
 listen "#{working_directory}/tmp/unicorn.sock", :backlog => 64
 pid "#{working_directory}/tmp/unicorn.pid"
-stderr_path "#{working_directory}/logs/unicorn.stderr.log"
-stdout_path "#{working_directory}/logs/unicorn.stdout.log"
+stderr_path "#{working_directory}/log/unicorn.stderr.log"
+stdout_path "#{working_directory}/log/unicorn.stdout.log"
 timeout 30
 
 preload_app true
