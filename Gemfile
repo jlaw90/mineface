@@ -2,7 +2,6 @@ source 'https://rubygems.org'
 
 gem 'rails', '3.2.13'
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
-gem 'sqlite3'
 gem 'json'
 
 # Gems used only for assets and not required
@@ -18,3 +17,4 @@ gem 'unicorn', platforms: :ruby
 
 gem 'haml-rails'
 gem 'jquery-rails'
+gem 'redis-rails'

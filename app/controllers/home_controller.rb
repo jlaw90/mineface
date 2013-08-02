@@ -30,7 +30,7 @@ class HomeController < ApplicationController
 
   def get_data(start, interval)
     # Select the data within range
-    data = DataPoint.where(created_at: start...DateTime.now.getutc).sort_by(&:created_at)
+    data = DataPoint.range(start, DateTime.now.getutc)
 
     # Can just use them as seconds since epoch from here on out
     interval = interval.to_i
@@ -38,13 +38,13 @@ class HomeController < ApplicationController
 
     # Group the data by our interval
     grouped = data.group_by do |dp|
-      utime = dp.created_at.to_i - start
+      utime = dp[:time] - start
       utime / interval
     end
 
     # Average and return as time, value pairs
     grouped.map do |idx, bucket|
-      sum = bucket.map(&:value).reduce(:+)
+      sum = bucket.map { |d| d[:value] }.reduce(:+)
       avg = sum / bucket.length
       time = (start + idx * interval) * 1000
       [time, avg]

@@ -44,7 +44,21 @@
               =elapsed_time
               seconds. |
 
-              Served by
-              =ENV['SERVER_SOFTWARE']
-              ,
-              =ENV['RUBY_VERSION']
+              Powered by
+              =request.headers['SERVER_SOFTWARE']
+        - if false # Set to false to remove env and header dump
+          .row-fluid
+            .span-12
+              %table
+                %thead
+                  %tr
+                    %th Key
+                    %th Value
+                %tbody
+                  -[['Environment', ENV], ['Headers', request.headers]].each do |name,hash|
+                    %tr
+                      %th=name
+                    -hash.each do |k,v|
+                      %tr
+                        %td=k
+                        %td=v

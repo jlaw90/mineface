@@ -10,7 +10,6 @@ window._chartRefreshTime = 0
 $ ->
   window.refreshChart = (time = 0, manual = false)->
     dif = if time == 0 then 0 else (time - window._chartRefreshTime) % window._chartRefreshInterval
-    # $('#chart_refresh').text("refresh (#{window._chartRefreshInterval - dif}s)")
     return unless dif == 0 or manual
     window._chartRefreshTime = window.time
     chart.showLoading() if manual
