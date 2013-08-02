@@ -23,7 +23,7 @@ window.refresh = () ->
 
 supports_html5_storage = ->
   try
-    return 'localStorage' in window && window['localStorage'] != null;
+    return window.localStorage?
   catch e
     return false;
 
