@@ -9,42 +9,9 @@
       // Some stuff for the rest of our js
       charts = #{@charts.map{|d| {title: d[0], interval: d[1], start: d[2]}}.to_json};
       chartsel = $('#chart_chart');
-
 .row-fluid
-  .span12
-    %h3 Pool statistics
-    / Pool stats
-    - pools = [{url: 'http://blah',user:'user',status: :enabled, pri: 0, get: 100, accept: 50, reject: 25, discard: 5}]# Todo: actually get pool data...
-    %table.table.table-striped.table-bordered
-      %thead
-        %tr
-          %th URL
-          %th User
-          %th Status
-          %th Priority
-          -names = ['Accepted', 'Rejected', 'Hardware errors']
-          %th=names.join('/')
-          -#%th Last share
-          -#%th Diff Shares
-          -#%th Diff Accepted/Rejected
-          -#%th Last Share Difficulty
-          -#%th Best Share
-      %tbody
-        -pools.each do |pool|
-          %tr{class: pool[:status] == :enabled ?'success': 'warning'}
-            %td=pool[:url]
-            %td=pool[:user]
-            %td=pool[:status]
-            %td=pool[:pri]
-            %td
-              :ruby
-                keys = [:accept, :reject, :discard]
-                classes = %w(success warning danger)
-                total = pool[:get].to_f
-              .progress{title: "Requested: #{pool[:get]}", style: 'margin-bottom: 0'}
-                - keys.each_with_index do |key,index|
-                  - val = pool[key]
-                  - perc = (val.to_f / total) * 100.0
-                  .bar{style:"width: #{perc}%", title: "#{names[index]}: #{val} (#{perc}%)", class: "bar-#{classes[index]}"}
-
-  / Device stats
+  .span12#device_container
+    =render partial: 'devices'
+.row-fluid
+  .span12#pool_container
+    =render partial: 'pools'

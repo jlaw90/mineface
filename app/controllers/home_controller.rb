@@ -3,6 +3,7 @@ class HomeController < ApplicationController
     start24 = 24.hours.ago.getutc
     start24 = Time.at(start24.to_i - (start24.to_i % 3600))
     @charts = [
+        ['Past 60 minutes', 5.minutes, 60.minutes.ago],
         ['Past 24 hours', 30.minutes, start24],
         ['Past 7 days', 3.hours, 7.days.ago.beginning_of_day.getutc],
         ['Past month', 12.hours, 1.month.ago.beginning_of_day.getutc],
@@ -22,11 +23,30 @@ class HomeController < ApplicationController
   end
 
   def overview
-    @speed = Time.now.to_i % 60
-    render layout: false
+    @devs = simplify(miner.devs, :devs)
+    render json: {
+        devices: @devs.nil? ? nil : @devs[:data].length,
+        speed: @devs.nil? ? nil : mhash_to_s(@devs[:data].map { |dev| dev[:mhs_5s] }.reduce(:+))
+    }
+  end
+
+  def devices
+    # Get device json data
+    @devs = simplify(miner.devs, :devs)
+    render layout: false, partial: 'devices'
+  end
+
+  def pools
+    @pools = simplify(miner.pools, :pools)
+    render layout: false, partial: 'pools'
   end
 
   private
+  def simplify(source, key)
+    return nil if source[:status] == :error
+    source[:data] = source[:data][key]
+    source
+  end
 
   def get_data(start, interval)
     # Select the data within range

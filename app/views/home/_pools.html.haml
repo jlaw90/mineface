@@ -1,0 +1,37 @@
+-names = ['Accepted', 'Rejected', 'Stale', 'Discarded']
+- @pools ||= {message: '', data: []}
+%h3
+  Pools
+  %small.muted#devices_overview=@pools[:message]
+%table.table.table-striped.table-bordered
+  %thead
+    %tr
+      %th Priority
+      %th URL
+      %th User
+      %th Status
+      %th=names.join('/')
+  %tbody
+    -if @pools[:data].length == 0
+      %tr
+        %td{colspan:5}
+          .text-center No pool information available
+    -else
+      -@pools[:data].each do |pool|
+        %tr{class: pool[:status] == 'Alive' ?'success': 'warning'}
+          %td
+            .text-right
+              =pool[:priority]
+          %td=pool[:url]
+          %td=pool[:user]
+          %td=pool[:status]
+          %td
+            :ruby
+              keys = [:accepted, :rejected, :stale, :discarded]
+              classes = %w(success warning warning danger)
+              vals = keys.map{|k| pool[k]}
+              total = vals.reduce(:+)
+              perc = vals.map{|v| (v.to_f/total) * 100.0}
+            .progress{style: 'margin-bottom: 0'}
+              - keys.each_with_index do |key,index|
+                .bar{style:"width: #{perc[index]}%", title: "#{names[index]}: #{vals[index]} (#{perc[index]}%)", class: "bar-#{classes[index]}"}

@@ -18,3 +18,4 @@ gem 'unicorn', platforms: :ruby
 gem 'haml-rails'
 gem 'jquery-rails'
 gem 'redis-rails'
+gem 'rufus-scheduler'

@@ -71,6 +71,9 @@ window.bootstrapAlert = (id, message, title = null, type = null, block = false) 
   container.append(alert)
   alert.fadeIn()
 
+window.removeAlert = (id) ->
+  $("\##{id}").fadeOut()
+
 
 window.updateOverview = (time = 0) ->
   return unless time % overview_refresh == 0
@@ -79,4 +82,5 @@ window.updateOverview = (time = 0) ->
 
 addRefreshFunction(window.updateOverview)
 $ ->
+  $.ajaxSetup({cache: false})
   setTimeout(refresh, 0);
