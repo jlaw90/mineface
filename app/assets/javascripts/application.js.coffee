@@ -3,7 +3,7 @@
 #= require twitter/bootstrap
 
 window._refreshFuncs = []
-window._refreshCur = 0
+window.startTime = new Date().getTime()
 
 overview_refresh = 5
 
@@ -16,10 +16,9 @@ window.removeRefreshFunction = (funcy) ->
   _refreshFuncs.splice(idx, 1)
 
 window.refresh = () ->
+  window.time = Math.floor((new Date().getTime() - startTime) / 1000)
   for i in [0..._refreshFuncs.length]
-    _refreshFuncs[i](_refreshCur)
-
-  window._refreshCur += 1
+    _refreshFuncs[i](window.time)
   setTimeout(refresh, 1000)
 
 supports_html5_storage = ->

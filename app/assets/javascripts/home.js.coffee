@@ -4,15 +4,15 @@
 #= require highcharts
 #= require modules/exporting
 
-window.chartRefreshInterval = 30
+window._chartRefreshInterval = 30
 window._chartRefreshTime = 0
 
 $ ->
   window.refreshChart = (time = 0, manual = false)->
-    dif = (time - window._chartRefreshTime) % window._chartRefreshInterval
-    $('#chart_refresh').text("refresh (#{window._chartRefreshTime - dif}s)")
-    return unless dif == 0
-    window._chartRefreshTime = time
+    dif = if time == 0 then 0 else (time - window._chartRefreshTime) % window._chartRefreshInterval
+    # $('#chart_refresh').text("refresh (#{window._chartRefreshInterval - dif}s)")
+    return unless dif == 0 or manual
+    window._chartRefreshTime = window.time
     chart.showLoading() if manual
     chartdata = charts[chartsel.val()]
     $.get('/chart', chartdata,(data, status, xhr) ->
@@ -23,7 +23,7 @@ $ ->
         chart.addSeries({}, false)
       chart.series[0].setData(data.data)
       chart.hideLoading()
-    ).fail (data) ->
+    , 'json').fail (data) ->
       bootstrapAlert('chart_err', "#{data.status} #{data.statusText}", 'Failed to load chart data')
 
   chartsel.change ->
