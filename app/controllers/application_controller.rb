@@ -27,7 +27,7 @@ class ApplicationController < ActionController::Base
       speed = speed.to_f / 1000.0
       unit += 1
     end
-    "#{speed} #{units[unit]}h/s"
+    "#{speed.round(2)} #{units[unit]}h/s"
   end
 
   def miner

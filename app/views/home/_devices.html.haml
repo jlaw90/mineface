@@ -26,7 +26,7 @@
           %td=dev[:status]
           %td
             .text-right
-              =dev[:temperature] || 'N/A'
+              = dev[:temperature].nil?? 'N/A': dev[:temperature].round(2)
           %td
             .text-right
               =mhash_to_s(dev[:mhs_5s])
