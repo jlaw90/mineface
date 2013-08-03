@@ -1,8 +1,10 @@
 -names = ['Accepted', 'Rejected', 'Stale', 'Discarded']
-- @pools ||= {message: '', data: []}
+- @pools ||= []
 %h3
   Pools
-  %small.muted#devices_overview=@pools[:message]
+  %small.muted#devices_overview
+    - unless @pools.empty?
+      =pluralize(@pools.length, 'pool')
 %table.table.table-striped.table-bordered
   %thead
     %tr
@@ -12,19 +14,19 @@
       %th Status
       %th=names.join('/')
   %tbody
-    -if @pools[:data].length == 0
+    -if @pools.length == 0
       %tr
         %td{colspan:5}
           .text-center No pool information available
     -else
-      -@pools[:data].each do |pool|
-        %tr{class: pool[:status] == 'Alive' ?'success': 'warning'}
+      -@pools.each do |pool|
+        %tr{class: pool[:status] == :alive ? :success: pool[:status] == :disabled ? :warning: :error}
           %td
             .text-right
               =pool[:priority]
           %td=pool[:url]
           %td=pool[:user]
-          %td=pool[:status]
+          %td=pool[:status].to_s.titleize
           %td
             :ruby
               keys = [:accepted, :rejected, :stale, :discarded]
@@ -34,4 +36,4 @@
               perc = vals.map{|v| (v.to_f/total) * 100.0}
             .progress{style: 'margin-bottom: 0'}
               - keys.each_with_index do |key,index|
-                .bar{style:"width: #{perc[index]}%", title: "#{names[index]}: #{vals[index]} (#{perc[index]}%)", class: "bar-#{classes[index]}"}
+                .bar{style:"width: #{perc[index].round(2)}%", title: "#{names[index]}: #{vals[index]} (#{perc[index].round(2)}%)", class: "bar-#{classes[index]}"}

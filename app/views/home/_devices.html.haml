@@ -1,29 +1,36 @@
 -names = ['Accepted', 'Rejected', 'Hardware errors']
-- @devs ||= {message: '', data:[]}
+- @devs ||= []
 %h3
   Devices
-  %small.muted#devices_overview=@devs[:message]
+  %small.muted#devices_overview
+    - unless @devs.empty?
+      = pluralize(@devs.length, 'device')
+      %span{style: 'font-size: 0.8em'}
+        -types = [[:cpu, 'CPU'], [:gpu, 'GPU'], [:pga, 'FPGA']].map{|a| count = @devs.count{|d| d[:type] == a[0]};count == 0? nil: pluralize(count,a[1])}.compact.join(', ')
+        ="(#{types})"
 %table.table.table-striped.table-bordered
   %thead
     %tr
       %th Name
+      %th Type
       %th Status
       %th Temp
       %th{title: '5 second average'} Mh/s
       %th=names.join('/')
       %th Utility
   %tbody
-    -if @devs[:data].length == 0
+    -if @devs.length == 0
       %tr
-        %td{colspan:6}
+        %td{colspan:7}
           .text-center No device information available
     -else
-      -@devs[:data].each do |dev|
-        -status = dev[:enabled]? dev[:status].downcase.to_sym: :warning
-        -status = status == :alive ? :success: :error
-        %tr{class: status}
+      -@devs.each do |dev|
+        -status = dev[:enabled]? dev[:status].downcase.to_sym: :disabled
+        -type = !dev[:cpu].nil? ? :cpu: !dev[:pga].nil? ? :pga : !dev[:gpu].nil? ? :gpu : :unknown
+        %tr{class:  status == :alive ? :success: status == :disabled ? :warning: :error}
           %td=dev[:name]
-          %td=dev[:status]
+          %td=type.to_s.titleize
+          %td=status.to_s.titleize
           %td
             .text-right
               = dev[:temperature].nil?? 'N/A': dev[:temperature].round(2)
@@ -40,7 +47,7 @@
             .progress{style: 'margin-bottom:0'}
               - keys.each_with_index do |key,index|
                 - val = dev[key]
-                .bar{style:"width: #{perc[index]}%", title: "#{names[index]}: #{val} (#{perc[index]}%)", class: "bar-#{classes[index]}"}
+                .bar{style:"width: #{perc[index].round(2)}%", title: "#{names[index]}: #{val} (#{perc[index].round(2)}%)", class: "bar-#{classes[index]}"}
           %td
             .text-right
               =dev[:utility]

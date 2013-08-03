@@ -16,14 +16,14 @@ $ ->
     window._chartRefreshTime = window.time
     chart.showLoading() if manual
     chartdata = charts[chartsel.val()]
-    removeAlert('chart_err') unless manual
     $.get('/chart', chartdata,(data, status, xhr) ->
       chart.setTitle({text: data.title })
-      chart.xAxis[0].setExtremes(data.start, new Date().getTime(), false)
 
       if chart.series.length == 0
         chart.addSeries({}, false)
-      chart.series[0].setData(data.data)
+      series = chart.series[0]
+      series.update({pointInterval: chartdata.interval * 1000, pointStart: chartdata.start * 1000})
+      series.setData(data.data)
       chart.hideLoading()
     , 'json').fail (data) ->
       bootstrapAlert('chart_err', "#{data.status} #{data.statusText}", 'Failed to load chart data')

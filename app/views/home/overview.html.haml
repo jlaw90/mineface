@@ -1,0 +1,6 @@
+- unless @devs.empty?
+  Uptime:
+  =time_ago_in_words(Time.now.to_i - @sum[:elapsed])
+  |
+  Speed:
+  =@speed

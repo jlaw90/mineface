@@ -7,7 +7,7 @@
       = render partial: 'hashchart'
     :javascript
       // Some stuff for the rest of our js
-      charts = #{@charts.map{|d| {title: d[0], interval: d[1], start: d[2]}}.to_json};
+      charts = #{@charts.map{|d| {title: d[0], interval: d[1], start: d[2].to_i}}.to_json};
       chartsel = $('#chart_chart');
 .row-fluid
   .span12#device_container

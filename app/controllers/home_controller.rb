@@ -1,18 +1,22 @@
 class HomeController < ApplicationController
+  include ActionView::Helpers::DateHelper
+
   def index
     start24 = 24.hours.ago.getutc
     start24 = Time.at(start24.to_i - (start24.to_i % 3600))
+    start60min = 60.minutes.ago
+    start60min = Time.at(start60min.to_i - (start60min.to_i % 300)) # Closest 5 minutes
     @charts = [
-        ['Past 60 minutes', 5.minutes, 60.minutes.ago],
-        ['Past 24 hours', 30.minutes, start24],
-        ['Past 7 days', 3.hours, 7.days.ago.beginning_of_day.getutc],
-        ['Past month', 12.hours, 1.month.ago.beginning_of_day.getutc],
-        ['Past year', 6.days, 1.year.ago.beginning_of_day.getutc]
+        ['Past 60 minutes (5 min avg)', 5.minutes, start60min],
+        ['Past 24 hours (30 min avg)', 30.minutes, start24],
+        ['Past 7 days (3 hour avg)', 3.hours, 7.days.ago.beginning_of_day.getutc],
+        ['Past month (12 hour avg)', 12.hours, 1.month.ago.beginning_of_day.getutc],
+        ['Past year (6 day avg)', 6.days, 1.year.ago.beginning_of_day.getutc]
     ]
   end
 
   def chart
-    @start = DateTime.parse(params[:start]).getutc
+    @start = Time.at(params[:start].to_i).to_datetime.getutc
     @interval = params[:interval].to_i
     @title = params[:title]
     render json: {
@@ -23,51 +27,50 @@ class HomeController < ApplicationController
   end
 
   def overview
-    @devs = simplify(miner.devs, :devs)
-    render json: {
-        devices: @devs.nil? ? nil : @devs[:data].length,
-        speed: @devs.nil? ? nil : mhash_to_s(@devs[:data].map { |dev| dev[:mhs_5s] }.reduce(:+))
-    }
+    @devs = miner.devices
+    unless @devs.empty?
+      @sum = miner.summary
+      @speed = mhash_to_s(@devs.map { |dev| dev[:mhs_5s] }.reduce(:+))
+    end
+    render layout: false
   end
 
   def devices
     # Get device json data
-    @devs = simplify(miner.devs, :devs)
+    miner.devices
+    @devs = miner.devices
     render layout: false, partial: 'devices'
   end
 
   def pools
-    @pools = simplify(miner.pools, :pools)
+    @pools = miner.pools
+    miner.summary
     render layout: false, partial: 'pools'
   end
 
   private
-  def simplify(source, key)
-    return nil if source[:status] == :error
-    source[:data] = source[:data][key]
-    source
-  end
-
   def get_data(start, interval)
     # Select the data within range
-    data = DataPoint.range(start, DateTime.now.getutc)
+    endy = DateTime.now.getutc
+    data = DataPoint.range(start, endy)
 
     # Can just use them as seconds since epoch from here on out
     interval = interval.to_i
     start = start.to_i
+    endy = endy.to_i
+
+    grouped = Array.new((endy - start) / interval) { [] }
 
     # Group the data by our interval
-    grouped = data.group_by do |dp|
+    data.each do |dp|
       utime = dp[:time] - start
-      utime / interval
+      idx = utime / interval
+      grouped[idx - 1] << dp[:value]
     end
 
     # Average and return as time, value pairs
-    grouped.map do |idx, bucket|
-      sum = bucket.map { |d| d[:value] }.reduce(:+)
-      avg = sum / bucket.length
-      time = (start + idx * interval) * 1000
-      [time, avg]
+    grouped.map do |arr|
+      arr.empty? ? 0 : arr.reduce(:+) / arr.length
     end
   end
 end
