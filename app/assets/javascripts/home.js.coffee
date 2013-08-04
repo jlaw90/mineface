@@ -11,18 +11,26 @@ window._poolRefreshInterval = 5
 
 $ ->
   window.refreshChart = (time = 0, manual = false)->
-    dif = if time == 0 then 0 else (time - window._chartRefreshTime) % window._chartRefreshInterval
+    chartInterval = (intvalsel.val() * intunsel.val())
+    dif = if time == 0 then 0 else (time - window._chartRefreshTime) % chartInterval
     return unless dif == 0 or manual
     window._chartRefreshTime = window.time
     chart.showLoading() if manual
-    chartdata = charts[chartsel.val()]
-    $.get('/chart', chartdata,(data, status, xhr) ->
-      chart.setTitle({text: data.title })
+    rv = rangevalsel.val()
+    ru = rangeunsel.val()
+    iv = intvalsel.val()
+    iu = intunsel.val()
+    params = {
+      start: (new Date().getTime() / 1000) - (rv * ru),
+      interval: iv * iu
+    }
+    $.get('/chart', params,(data, status, xhr) ->
+      chart.setTitle("Past #{rv} #{ru}")
 
       if chart.series.length == 0
         chart.addSeries({}, false)
       series = chart.series[0]
-      series.update({pointInterval: chartdata.interval * 1000, pointStart: chartdata.start * 1000})
+      series.update({pointInterval: iv * iu * 1000, pointStart: new Date().getTime() - (rv * ru)})
       series.setData(data.data)
       chart.hideLoading()
     , 'json').fail (data) ->
@@ -44,12 +52,27 @@ $ ->
     ).fail (data) ->
       bootstrapAlert('pool_err', "#{data.status} #{data.statusText}", 'Failed to fetch pool information')
 
-  chartsel.change ->
+  rangevalsel.change ->
     refreshChart(0, true)
-    sset('selected_chart', chartsel.val())
+    sset('hchart_range_value', rangevalsel.val())
+  rangeunsel.change ->
+    refreshChart(0, true)
+    sset('hchart_range_unit', rangeunsel.val())
 
+  intvalsel.change ->
+    refreshChart(0, true)
+    sset('hchart_interval_value', intvalsel.val())
+  intunsel.change ->
+    refreshChart(0, true)
+    sset('hchart_interval_unit', intunsel.val())
+
+  # Todo: work out what would be good defaults
+  rangevalsel.val(sget('hchart_range_value', 24)) # 24
+  rangeunsel.val(sget('hchart_range_unit', 3600)) # hours
+  intvalsel.val(sget('hchart_interval_value', 5)) # 5
+  intunsel.val(sget('hchart_interval_unit', 60)) # mins
+
+  # Add refresh members
   addRefreshFunction(refreshChart)
   addRefreshFunction(refreshDevices)
   addRefreshFunction(refreshPools)
-
-  chartsel.val(sget('selected_chart', 0))

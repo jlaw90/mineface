@@ -1,10 +1,9 @@
 scheduler = Rufus::Scheduler.start_new
 
 def add_point
-  $api ||= Api.create
-  devs = $api.devs
-  return if devs[:status] == :error or devs[:data][:devs].length == 0
-  val = devs[:data][:devs].map { |dev| dev[:mhs_5s] }.reduce(:+)
+  devs = Api.create.devices
+  return if devs.empty?
+  val = devs.map { |dev| dev[:mhs_5s] }.reduce(:+)
   DataPoint.add(DateTime.now, val)
 end
 

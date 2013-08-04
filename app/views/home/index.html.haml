@@ -1,14 +1,27 @@
 .row-fluid
   .spawn12#alert_container
 .row-fluid
-  .span12.text-right
-    =select('chart', 'chart', @charts.each_with_index.map{|d,i| [d[0], i]})
+  .span12.text-center
+    / Chart selection
+    -day = 60*60*24
+    - time = {minutes: 60, hours: 60*60, days: day, weeks: day*7, months: day*28, years: day*365}
+    .row-fluid
+      .span3.offset6
+        Range:
+        =select('range_value', 'select', 1...30, {}, class: 'input-mini')
+        =select('range_unit', 'select', time, {}, class: 'input-medium')
+      .span3
+        Interval:
+        =select('interval_value', 'select', 1...30, {}, class: 'input-mini')
+        =select('interval_unit', 'select', time, {}, class: 'input-medium')
     .chart_area
       = render partial: 'hashchart'
     :javascript
       // Some stuff for the rest of our js
-      charts = #{@charts.map{|d| {title: d[0], interval: d[1], start: d[2].to_i}}.to_json};
-      chartsel = $('#chart_chart');
+      rangevalsel = $('#range_value_select')
+      rangeunsel = $('#range_unit_select')
+      intvalsel = $('#interval_value_select')
+      intunsel = $('#interval_unit_select')
 .row-fluid
   .span12#device_container
     =render partial: 'devices'
