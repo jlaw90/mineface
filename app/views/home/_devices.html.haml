@@ -33,8 +33,9 @@
             %td=dev[:type].to_s.titleize
             %td
               -if dev[:type] != :cpu && privileged?
-                =link_to(status == :disabled ? enable_device_path(dev[:id]): disable_device_path(dev[:id]), remote: true) do
-                  %i{class: "icon-check#{status == :disabled ? '-empty': ''}", title: status == :disabled ? 'Enable device': 'Disable device'}
+                =dev.inspect
+                -#=link_to(status == :disabled ? enable_device_path(dev[:id]): disable_device_path(dev[:id]), remote: true) do
+                -#  %i{class: "icon-check#{status == :disabled ? '-empty': ''}", title: status == :disabled ? 'Enable device': 'Disable device'}
               =status.to_s.titleize
             %td= dev[:temperature].nil?? 'N/A': dev[:temperature].round(2)
             %td=mhash_to_s(dev[:mhs_5s])

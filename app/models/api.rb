@@ -12,7 +12,12 @@ class Api # A very simple api wrapper that caches results
   end
 
   def privileged?
-    self.privileged[:status] != :error
+    begin
+      self.privileged # Will error if we can't access privileged commands
+      return true
+    rescue
+      return false
+    end
   end
 
   def initialize(host='localhost', port=4028)
