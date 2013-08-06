@@ -1,6 +1,10 @@
 - unless @devs.empty?
-  Uptime:
-  =time_ago_in_words(Time.now.to_i - @sum[:elapsed])
+  %span.pad-horizontal
+    %i.icon-time
+    Uptime:
+    =time_ago_in_words(Time.now.to_i - @sum[:elapsed])
   |
-  Speed:
-  =@speed
+  %span.pad-horizontal
+    %i.icon-signal
+    Speed:
+    =@speed

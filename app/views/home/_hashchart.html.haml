@@ -1,6 +1,7 @@
 .span12
   :javascript
       $(function(){
+          Highcharts.setOptions({global:{useUTC: false}});
           chart = new Highcharts.Chart({
             chart: {
               renderTo: 'hashchart'

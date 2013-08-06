@@ -2,7 +2,7 @@ class ApplicationController < ActionController::Base
   protect_from_forgery
   before_filter :init
 
-  helper_method :app_name, :app_version, :elapsed_time, :mhash_to_s, :miner
+  helper_method :app_name, :app_version, :elapsed_time, :mhash_to_s, :miner, :privileged?, :json_protect
 
   def init
     @start_time = Time.now
@@ -31,6 +31,19 @@ class ApplicationController < ActionController::Base
   end
 
   def miner
-    @miner ||= Api.create # Todo: change to localhost!
+    @miner ||= Api.create
+  end
+
+  def json_protect
+    begin
+      render json: {status: :ok, result: yield}
+    rescue Exception => e
+      render json: {status: :err, message: e.to_s}, status: 500
+    end
+  end
+
+  # Todo: login system
+  def privileged?
+    true && miner.privileged?
   end
 end

@@ -1,39 +1,69 @@
 -names = ['Accepted', 'Rejected', 'Stale', 'Discarded']
 - @pools ||= []
-%h3
-  Pools
-  %small.muted#devices_overview
-    - unless @pools.empty?
-      =pluralize(@pools.length, 'pool')
-%table.table.table-striped.table-bordered
-  %thead
-    %tr
-      %th Priority
-      %th URL
-      %th User
-      %th Status
-      %th=names.join('/')
-  %tbody
-    -if @pools.length == 0
+- @pools.sort! {|a,b| a[:priority] <=> b[:priority]}
+.panel
+  %h3.panel-heading
+    %i.icon-globe
+    Pools
+    %small.text-muted#devices_overview
+      - unless @pools.empty?
+        =pluralize(@pools.length, 'pool')
+  %table.table.table-striped
+    %thead
       %tr
-        %td{colspan:5}
-          .text-center No pool information available
-    -else
-      -@pools.each do |pool|
-        %tr{class: pool[:status] == :alive ? :success: pool[:status] == :disabled ? :warning: :error}
-          %td
-            .text-right
+        %th Priority
+        %th URL
+        %th User
+        %th Status
+        %th=names.join('/')
+        - if privileged?
+          %th.text-center Options
+    %tbody
+      -if @pools.length == 0
+        %tr
+          %td{colspan:6}
+            .text-center No pool information available
+      -else
+        -@pools.each do |pool|
+          %tr{class: pool[:status] == :alive ? :success: pool[:status] == :disabled ? :warning: :danger, id: "pool#{pool[:pool]}"}
+            %td
               =pool[:priority]
-          %td=pool[:url]
-          %td=pool[:user]
-          %td=pool[:status].to_s.titleize
-          %td
-            :ruby
-              keys = [:accepted, :rejected, :stale, :discarded]
-              classes = %w(success warning warning danger)
-              vals = keys.map{|k| pool[k]}
-              total = vals.reduce(:+)
-              perc = vals.map{|v| (v.to_f/total) * 100.0}
-            .progress{style: 'margin-bottom: 0'}
-              - keys.each_with_index do |key,index|
-                .bar{style:"width: #{perc[index].round(2)}%", title: "#{names[index]}: #{vals[index]} (#{perc[index].round(2)}%)", class: "bar-#{classes[index]}"}
+              -if privileged?
+                %span.priority-change{style: 'position: relative'}
+                  %a.pri-up{class: pool[:priority] == 0 ? 'disabled': ''}<>
+                    %i.icon-angle-up
+                  %a.pri-down{class: pool[:priority] == @pools.length - 1? 'disabled': ''}<>
+                    %i.icon-angle-down
+
+            %td{id: "pool#{pool[:pool]}_url"}=pool[:url]
+            %td{id: "pool#{pool[:pool]}_user"}=pool[:user]
+            %td=pool[:status].to_s.titleize
+            %td
+              :ruby
+                keys = [:accepted, :rejected, :stale, :discarded]
+                classes = %w(success warning warning danger)
+                vals = keys.map{|k| pool[k]}
+                total = vals.reduce(:+)
+                perc = vals.map{|v| (v.to_f/total) * 100.0}
+              .progress{style: 'margin-bottom: 0'}
+                - keys.each_with_index do |key,index|
+                  .progress-bar{style:"width: #{perc[index].round(2)}%", title: "#{names[index]}: #{vals[index]} (#{perc[index].round(2)}%)", class: "progress-bar-#{classes[index]}"}
+            - if privileged?
+              %td.text-center
+                %span.option-link
+                  =link_to(pool[:status] == :disabled ? enable_pool_path(pool[:pool]): disable_pool_path(pool[:pool]), remote: true, data: {refresh: 'pools'}) do
+                    %i{class: "icon-check#{pool[:status] == :disabled ? '-empty': ''}", title: pool[:status] == :disabled ? 'Enable pool': 'Disable pool'}<>
+                %span.option-link
+                  =link_to(update_pool_path(pool[:pool]), onclick: 'return false', data: {poolEdit: pool[:pool]}) do
+                    %span{title: 'Settings'}<>
+                      %i.icon-wrench
+                %span.option-link
+                  =link_to(delete_pool_path(pool[:pool]), remote: true, data: {confirm: 'Are you sure you want to delete this pool?', refresh: 'pools'}) do
+                    %span{title: 'Delete'}<>
+                      %i.icon-trash
+  -if privileged?
+    =link_to(new_pool_path, id: 'new_pool', class: 'btn btn-primary', data: {toggle: 'modal', target: '#pool_settings'}, onclick: 'return false') do
+      %i.icon-plus
+      Add pool
+    %script
+      $('#new_pool').attr('href', $('#new_pool').data('target'));

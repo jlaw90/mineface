@@ -4,75 +4,103 @@
 #= require highcharts
 #= require modules/exporting
 
-window._chartRefreshInterval = 30
-window._chartRefreshTime = 0
-window._deviceRefreshInterval = 5
-window._poolRefreshInterval = 5
-
 $ ->
-  window.refreshChart = (time = 0, manual = false)->
+  window.refreshChart = ->
     chartInterval = (intvalsel.val() * intunsel.val())
-    dif = if time == 0 then 0 else (time - window._chartRefreshTime) % chartInterval
-    return unless dif == 0 or manual
+    chartRange = rangevalsel.val() * rangeunsel.val()
     window._chartRefreshTime = window.time
-    chart.showLoading() if manual
-    rv = rangevalsel.val()
-    ru = rangeunsel.val()
-    iv = intvalsel.val()
-    iu = intunsel.val()
+    chart.showLoading() if chartInterval != refreshChart.refresh_interval || chartRange != refreshChart.last_range
+    refreshChart.refresh_interval = chartInterval
+    refreshChart.last_range = chartRange
+
+    start = (new Date().getTime() / 1000) - chartRange
+    start -= start % chartInterval
+
     params = {
-      start: (new Date().getTime() / 1000) - (rv * ru),
-      interval: iv * iu
+      start: start,
+      interval: chartInterval
     }
     $.get('/chart', params,(data, status, xhr) ->
-      chart.setTitle("Past #{rv} #{ru}")
-
       if chart.series.length == 0
         chart.addSeries({}, false)
       series = chart.series[0]
-      series.update({pointInterval: iv * iu * 1000, pointStart: new Date().getTime() - (rv * ru)})
+      series.update({pointInterval: chartInterval * 1000, pointStart: start * 1000})
       series.setData(data.data)
       chart.hideLoading()
     , 'json').fail (data) ->
-      bootstrapAlert('chart_err', "#{data.status} #{data.statusText}", 'Failed to load chart data')
+      processAjaxError('retrieving chart data', data)
 
-  window.refreshDevices = (time = 0) ->
-    dif = time % window._deviceRefreshInterval
-    return unless dif == 0
+  window.refreshDevices = ->
     $.get('/devices', null,(data, status, xhr) ->
       $('#device_container').html($(data))
     ).fail (data) ->
-      bootstrapAlert('device_err', "#{data.status} #{data.statusText}", 'Failed to fetch device information')
+      processAjaxError('retrieving device information', data)
 
-  window.refreshPools = (time = 0) ->
-    dif = time % window._poolRefreshInterval
-    return unless dif == 0
+  window.refreshPools = ->
     $.get('/pools', null,(data, status, xhr) ->
       $('#pool_container').html($(data))
     ).fail (data) ->
-      bootstrapAlert('pool_err', "#{data.status} #{data.statusText}", 'Failed to fetch pool information')
+      processAjaxError('retrieving pool information', data)
 
-  rangevalsel.change ->
-    refreshChart(0, true)
-    sset('hchart_range_value', rangevalsel.val())
-  rangeunsel.change ->
-    refreshChart(0, true)
-    sset('hchart_range_unit', rangeunsel.val())
-
-  intvalsel.change ->
-    refreshChart(0, true)
-    sset('hchart_interval_value', intvalsel.val())
-  intunsel.change ->
-    refreshChart(0, true)
-    sset('hchart_interval_unit', intunsel.val())
-
-  # Todo: work out what would be good defaults
+  # Load last selected chart
   rangevalsel.val(sget('hchart_range_value', 24)) # 24
   rangeunsel.val(sget('hchart_range_unit', 3600)) # hours
   intvalsel.val(sget('hchart_interval_value', 5)) # 5
   intunsel.val(sget('hchart_interval_unit', 60)) # mins
 
-  # Add refresh members
-  addRefreshFunction(refreshChart)
-  addRefreshFunction(refreshDevices)
-  addRefreshFunction(refreshPools)
+  changeHandle = (src, key) ->
+    refreshChart(0, true)
+    sset("hchart_#{key}", $(src).val())
+
+  # Add selection changes
+  rangevalsel.change ->
+    changeHandle(this, 'range_value')
+  rangeunsel.change ->
+    changeHandle(this, 'range_unit')
+  intvalsel.change ->
+    changeHandle(this, 'interval_value')
+  intunsel.change ->
+    changeHandle(this, 'interval_unit')
+
+  # Add refresh functions
+  addRefreshFunction('chart', refreshChart)
+  addRefreshFunction('devs', refreshDevices)
+  addRefreshFunction('pools', refreshPools)
+
+  # New pool
+  $('body').on('click', '#new_pool', (evt) ->
+    # Called when new pool button is clicked
+    $('#pool_url').val('');
+    $('#pool_user').val('');
+    $('#pool_pass').val('');
+    $('#pool_editmode').val('new')
+  )
+
+  # Edit pool
+  $('body').on('click', '*[data-pooledit]', (evt) ->
+    id = $(this).data('pooledit')
+    url = $("#pool#{id}_url")
+    user = $("#pool#{id}_user")
+    $('#pool_url').val(url.text());
+    $('#pool_user').val(user.text());
+    $('#pool_pass').val('');
+    $('#pool_editmode').val(id)
+    $('#pool_settings').modal('show')
+  )
+
+  # Save changes
+  $('#save_pool').click ->
+    window.prev_modal = $('#pool_settings')
+    return popup('Please enter a pool url') unless $('#pool_url').val()
+    return popup('Please enter a username') unless $('#pool_user').val()
+    return popup('Please enter a password') unless $('#pool_pass').val()
+    window.prev_modal = null
+    params = {src: $('#pool_editmode').val(), url: $('#pool_url').val(), user: $('#pool_user').val(), pass: $('#pool_pass').val()}
+    showWait(if params.src == 'new' then 'Creating pool' else 'Updating pool')
+    url = if params.src == 'new' then '/pool/create' else "/pool/#{params.src}/update"
+    $.get(url, params, ((data, status, xhr) ->
+      refreshPools(0)
+      hideWait()
+    )).fail((data) ->
+      processAjaxError("#{if params.src == 'new' then 'creat' else 'updat'}ing pool", data, true)
+      hideWait())

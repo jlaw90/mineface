@@ -1,53 +1,52 @@
 -names = ['Accepted', 'Rejected', 'Hardware errors']
 - @devs ||= []
-%h3
-  Devices
-  %small.muted#devices_overview
-    - unless @devs.empty?
-      = pluralize(@devs.length, 'device')
-      %span{style: 'font-size: 0.8em'}
-        -types = [[:cpu, 'CPU'], [:gpu, 'GPU'], [:pga, 'FPGA']].map{|a| count = @devs.count{|d| d[:type] == a[0]};count == 0? nil: pluralize(count,a[1])}.compact.join(', ')
-        ="(#{types})"
-%table.table.table-striped.table-bordered
-  %thead
-    %tr
-      %th Name
-      %th Type
-      %th Status
-      %th Temp
-      %th{title: '5 second average'} Mh/s
-      %th=names.join('/')
-      %th Utility
-  %tbody
-    -if @devs.length == 0
+.panel
+  %h3.panel-heading
+    %i.icon-hdd
+    Devices
+    %small.text-muted#devices_overview
+      - unless @devs.empty?
+        = pluralize(@devs.length, 'device')
+        %span{style: 'font-size: 0.8em'}
+          -types = [[:cpu, 'CPU'], [:gpu, 'GPU'], [:pga, 'FPGA']].map{|a| count = @devs.count{|d| d[:type] == a[0]};count == 0? nil: pluralize(count,a[1])}.compact.join(', ')
+          ="(#{types})"
+  %table.table.table-striped
+    %thead
       %tr
-        %td{colspan:7}
-          .text-center No device information available
-    -else
-      -@devs.each do |dev|
-        -status = dev[:enabled]? dev[:status].downcase.to_sym: :disabled
-        -type = !dev[:cpu].nil? ? :cpu: !dev[:pga].nil? ? :pga : !dev[:gpu].nil? ? :gpu : :unknown
-        %tr{class:  status == :alive ? :success: status == :disabled ? :warning: :error}
-          %td=dev[:name]
-          %td=type.to_s.titleize
-          %td=status.to_s.titleize
-          %td
-            .text-right
-              = dev[:temperature].nil?? 'N/A': dev[:temperature].round(2)
-          %td
-            .text-right
-              =mhash_to_s(dev[:mhs_5s])
-          %td
-            :ruby
-              keys = [:accepted, :rejected, :hardware_errors]
-              classes = %w(success warning danger)
-              vals = keys.map{|k| dev[k]}
-              total = vals.reduce(:+)
-              perc = keys.map{|k| total == 0? 0: (dev[k].to_f / total.to_f) * 100.0}
-            .progress{style: 'margin-bottom:0'}
-              - keys.each_with_index do |key,index|
-                - val = dev[key]
-                .bar{style:"width: #{perc[index].round(2)}%", title: "#{names[index]}: #{val} (#{perc[index].round(2)}%)", class: "bar-#{classes[index]}"}
-          %td
-            .text-right
-              =dev[:utility]
+        %th Name
+        %th Type
+        %th Status
+        %th Temp
+        %th{title: '5 second average'} Mh/s
+        %th=names.join('/')
+        %th Utility
+    %tbody
+      -if @devs.length == 0
+        %tr
+          %td{colspan:7}
+            .text-center No device information available
+      -else
+        -@devs.each do |dev|
+          -status = dev[:enabled]? dev[:status].downcase.to_sym: :disabled
+          %tr{class:  status == :alive ? :success: status == :disabled ? :warning: :danger}
+            %td=dev[:name]
+            %td=dev[:type].to_s.titleize
+            %td
+              -if dev[:type] != :cpu && privileged?
+                =link_to(status == :disabled ? enable_device_path(dev[:id]): disable_device_path(dev[:id]), remote: true) do
+                  %i{class: "icon-check#{status == :disabled ? '-empty': ''}", title: status == :disabled ? 'Enable device': 'Disable device'}
+              =status.to_s.titleize
+            %td= dev[:temperature].nil?? 'N/A': dev[:temperature].round(2)
+            %td=mhash_to_s(dev[:mhs_5s])
+            %td
+              :ruby
+                keys = [:accepted, :rejected, :hardware_errors]
+                classes = %w(success warning danger)
+                vals = keys.map{|k| dev[k]}
+                total = vals.reduce(:+)
+                perc = keys.map{|k| total == 0? 0: (dev[k].to_f / total.to_f) * 100.0}
+              .progress{style: 'margin-bottom:0'}
+                - keys.each_with_index do |key,index|
+                  - val = dev[key]
+                  .progress-bar{style:"width: #{perc[index].round(2)}%", title: "#{names[index]}: #{val} (#{perc[index].round(2)}%)", class: "progress-bar-#{classes[index]}"}
+            %td=dev[:utility]

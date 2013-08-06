@@ -8,7 +8,11 @@ class Api # A very simple api wrapper that caches results
   attr_accessor :port, :host
 
   def self.create
-    Api.new($api_host, $api_port)
+    @@inst ||= Api.new($api_host, $api_port)
+  end
+
+  def privileged?
+    self.privileged[:status] != :error
   end
 
   def initialize(host='localhost', port=4028)
@@ -17,85 +21,119 @@ class Api # A very simple api wrapper that caches results
 
   def query(method, *params)
     req = {command: method}
-    req[:parameter] = params unless params.length == 0
+    unless params.length == 0
+      params = params.map { |p| p.to_s.gsub('\\', '\\\\').gsub(',', '\,') }
+      req[:parameter] = params.join(',')
+    end
     req = req.to_json
 
-    begin
-      s = TCPSocket.open(@host, @port)
-      s.write req
-      data = s.read.strip
-      # Okay, nasty, can have control character.... let's strip 'em!
-      data = data.chars.map { |c| c.ord >= 32 ? c : "\\u#{'%04x' % c.ord}" }.join
-      data = JSON.parse(data)
-      s.close
+    s = TCPSocket.open(@host, @port)
+    s.write req
+    data = s.read.strip
+    # Okay, nasty, can have control character.... let's strip 'em!
+    data = data.chars.map { |c| c.ord >= 32 ? c : "\\u#{'%04x' % c.ord}" }.join
+    data = JSON.parse(data)
+    s.close
 
-      # Check status
-      status = data['STATUS'][0]
-      sc = status['STATUS']
-      c = status['Code']
-      msg = status['Msg']
-      data.delete('STATUS')
-      case sc
-        when 'S'
-        when 'I'
-          logger.info "Info from API [#{c}]: #{msg}"
-        when 'W'
-          logger.info "Warning from API [#{c}]: #{msg}"
-        when 'E'
-          logger.fatal "Error from API [#{c}]: #{msg}"
-        when 'F'
-          logger.fatal "Fatal from API [#{c}]: #{msg}"
-        else
-          logger.fatal "Unexpected response from API '#{sc}' [#{c}]: #{msg}"
-      end
-
-      data = sanitise(data)
-      return {status: :ok, code: c, message: msg, data: data}
-    rescue Exception => e
-      return {status: :error, error: e}
+    # Check status
+    status = data['STATUS'][0]
+    sc = status['STATUS']
+    c = status['Code']
+    msg = status['Msg']
+    data.delete('STATUS')
+    case sc
+      when 'S'
+      when 'I'
+        logger.info "Info from API [#{c}]: #{msg}"
+      when 'W'
+        logger.info "Warning from API [#{c}]: #{msg}"
+      else
+        raise "#{sc}: #{msg}"
     end
+
+    data = sanitise(data)
+    return {status: :ok, code: c, message: msg, data: data}
   end
 
   def method_missing(name, *args)
-    query(name, args)
+    query(name, *args)
   end
 
   def version
-    ver = query('version')
-    ver[:status] == :error ? nil : ver[:data][:version][0]
+    query('version')[:data][:version][0]
   end
 
   def summary
-    sum = query('summary')
-    sum[:status] == :error ? nil : sum[:data][:summary][0]
+    query('summary')[:data][:summary][0]
   end
 
   def pools
-    pools = query 'pools'
-    return [] if pools[:status] == :error
-    mapped = pools[:data][:pools].map do |pool|
+    query('pools')[:data][:pools].each do |pool|
       pool[:status] = pool[:status].downcase.to_sym
-      pool
     end
-    mapped
+  end
+
+  def pool(id)
+    pools.keep_if { |e| e[:id] == id }.first
+  end
+
+  def update_pool(pool)
+    addpool(pool[:url], pool[:user], pool[:pass]) # Add the new one
+    pools = self.pools
+    new = pools.last
+    new[:priority] = pools[pool[:id]][:priority] # Set priorities
+    pools[pool[:id]][:priority] = pools.length + 5
+    order = pools.sort { |a, b| a[:priority] <=> b[:priority] }.map { |p| p[:pool] }
+    poolpriority(*order) # Change pool priorities
+    removepool(pool[:id]) # Remove the old pool
   end
 
   def devices
     devs = query 'devs'
-    return [] if devs[:status] == :error
     mapped = devs[:data][:devs].map do |dev|
       dev[:enabled] = dev[:enabled] == true || dev[:enabled] == 'Y'
       dev[:status] = dev[:status].downcase.to_sym
-      dev[:type] = if dev.has_key?(:pga) then
-                     :cpu
-                   elsif dev.has_key?(:gpu) then
-                     :gpu
-                   else
-                     dev.has_key?(:cpu) ? :cpu : :unknown
-                   end
+      types = [:cpu, :gpu, :pga, :asc]
+      types.each do |type|
+        next unless dev.has_key?(type)
+        raise 'Device with multiple types' if dev.has_key?(:type)
+        dev[:type] = type
+      end
       dev
     end
     mapped
+  end
+
+  def device(id)
+    devices.keep_if { |e| e[:id] == id }.first
+  end
+
+  def enable_device(id)
+    type = device(id)[:type]
+    case type
+      when :gpu then
+        gpuenable(id)
+      when :pga then
+        pgaenable(id)
+      when :asc then
+        ascenable(id)
+      else
+        raise "I don't know how to enable devices of type #{type}"
+    end
+  end
+
+  def disable_device(id)
+    type = device(id)[:type]
+    case type
+      when :gpu then
+        gpudisable(id)
+      when :pga then
+        pgadisable(id)
+      when :asc then
+        ascdisable(id)
+      else
+        raise "I don't know how to disable devices of type #{type}"
+    end
   end
 
   private

@@ -5,3 +5,17 @@
   position: relative;
   min-height: 200px;
 }
+
+.priority-change {
+  position: relative;
+  a {
+    position: absolute;
+    left: 0px;
+    &.pri-up {
+      bottom: 20%;
+    }
+    &.pri-down {
+      top: 20%;
+    }
+  }
+}

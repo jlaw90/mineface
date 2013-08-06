@@ -5,9 +5,8 @@ class HomeController < ApplicationController
   end
 
   def chart
-    @start = Time.at(params[:start].to_i).to_datetime.getutc
+    @start = Time.at(params[:start].to_i).to_datetime
     @interval = params[:interval].to_i
-    @title = params[:title]
     render json: {
         title: @title,
         start: @start.to_i*1000,
@@ -38,15 +37,18 @@ class HomeController < ApplicationController
   end
 
   private
-  def get_data(start, interval)
+  def get_data(start_date, interval)
     # Select the data within range
-    endy = DateTime.now.getutc
-    data = DataPoint.range(start, endy)
-
+    start = start_date.to_i
+    start -= start % interval
+    fin = DateTime.now.to_i
+    fin -= fin % interval
+    endy = Time.at(fin).to_datetime
     interval = interval.to_f
-    start = start.to_i
+    data = DataPoint.range(Time.at(start).to_datetime, endy)
 
-    groups = Array.new((endy.to_i - start) / interval.to_i) { [] }
+    elapsed = endy.to_i - start
+    groups = Array.new(elapsed / interval.to_i) { [] }
 
     # Group the data by our interval
     data.each do |dp|

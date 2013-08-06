@@ -12,31 +12,45 @@
  *= require_tree .
  */
 
+@import 'twitter/bootstrap/variables';
+
+a.disabled {
+  // Custom case for link with no btn classes being disabled
+  color: $gray-light;
+  &:hover {
+    color: $gray-light;
+  }
+}
+
+@import 'font-awesome';
 @import "twitter/bootstrap";
-@import "twitter/bootstrap/variables";
-@import "twitter/bootstrap/responsive";
 
 body {
-  padding-top: 60px;
+  padding-top: 90px;
+}
+
+a:hover > i {
+  // No underline on icons within a link
+  text-decoration: none;
 }
 
 footer {
   .container {
     margin-top: 40px;
-    border-top: 1px solid $grayLighter;
-    color: $grayLight;
+    border-top: 1px solid $gray-lighter;
+    color: $gray-light;
     small {
-      color: $grayLight;
+      color: $gray-light;
     }
   }
 }
 
-.ajax_overlay {
-  z-index: 999;
+.pad-horizontal {
+  padding-left: 10px;
+  padding-right: 10px;
 }
 
-.ajax_loader {
-  background: image_url("ajax-loader.gif") no-repeat center center transparent;
-  width: 100%;
-  height: 100%;
+.option-link {
+  padding-left: 3px;
+  padding-right: 3px;
 }

@@ -9,7 +9,8 @@ gem 'json'
 group :assets do
   gem 'sass-rails', '~> 3.2.3'
   gem 'coffee-rails', '~> 3.2.1'
-  gem 'bootstrap-sass-rails'
+  gem 'bootstrap-sass-rails', github: 'yabawock/bootstrap-sass-rails', branch: :master
+  gem 'font-awesome-rails' # Glyphicons are separate now, we'll just use font-awesome instead :)
   gem 'uglifier', '>= 1.0.3'
 end
 

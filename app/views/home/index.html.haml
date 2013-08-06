@@ -1,20 +1,29 @@
-.row-fluid
-  .spawn12#alert_container
-.row-fluid
-  .span12.text-center
-    / Chart selection
-    -day = 60*60*24
-    - time = {minutes: 60, hours: 60*60, days: day, weeks: day*7, months: day*28, years: day*365}
-    .row-fluid
-      .span3.offset6
-        Range:
-        =select('range_value', 'select', 1...30, {}, class: 'input-mini')
-        =select('range_unit', 'select', time, {}, class: 'input-medium')
-      .span3
-        Interval:
-        =select('interval_value', 'select', 1...30, {}, class: 'input-mini')
-        =select('interval_unit', 'select', time, {}, class: 'input-medium')
-    .chart_area
+.row.text-center#chart_container
+  .panel
+    .panel-heading
+      .row
+        .col-lg-2
+          %h3.text-left.panel-title{style: 'font-size:26px'}
+            %i.icon-bar-chart
+            Charts
+        / Chart selection
+        -day = 60*60*24
+        - time = {minutes: 60, hours: 60*60, days: day, weeks: day*7, months: day*28, years: day*365}
+        .col-lg-4.col-offset-2.col-lg-offset-2.col-sm-5.col-sm-offset-2
+          %form.form-horizontal
+            %label.col-lg-3.col-sm-3.control-label Range:
+            .col-lg-4.col-sm-4
+              =select('range_value', 'select', 1...30, {}, class: 'form-control input-small')
+            .col-lg-5.col-sm-5
+              =select('range_unit', 'select', time, {}, class: 'form-control input-small')
+        .col-lg-4.col-sm-5
+          %form.form-horizontal
+            %label.col-lg-3.col-sm-3.control-label Interval:
+            .col-lg-4.col-sm-4
+              =select('interval_value', 'select', 1...30, {}, class: 'col-lg-4 form-control input-small')
+            .col-lg-5.col-sm-5
+              =select('interval_unit', 'select', time, {}, class: 'col-lg-5 form-control input-small')
+    #chart_panel_content
       = render partial: 'hashchart'
     :javascript
       // Some stuff for the rest of our js
@@ -22,9 +31,30 @@
       rangeunsel = $('#range_unit_select')
       intvalsel = $('#interval_value_select')
       intunsel = $('#interval_unit_select')
-.row-fluid
-  .span12#device_container
-    =render partial: 'devices'
-.row-fluid
-  .span12#pool_container
-    =render partial: 'pools'
+.row#device_container
+  =render partial: 'devices'
+
+
+.modal.fade#pool_settings
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %h4
+          %i.icon-globe
+          Pool settings
+          %button.close{'data-dismiss' => 'modal', 'aria-hidden' => true} &times;
+      .modal-body
+        .form-group
+          %input#pool_editmode{type: :hidden, value: 'unknown'}
+          %label{for: :pool_url} Pool URL
+          %input#pool_url.form-control{placeholder: 'Enter URL'}
+          %p.help-block Format &lt;host&gt;:&lt;port&gt; e.g. pool.50btc.com:8332
+          %label{for: :pool_user} Worker username
+          %input#pool_user.form-control{placeholder: 'Enter username'}
+          %label{for: :pool_pass} Worker password
+          %input#pool_pass.form-control{placeholder: 'Enter password'}
+      .modal-footer
+        %button.btn.btn-primary#save_pool{'data-dismiss' => 'modal'} Save
+        %button.btn.btn-default{'data-dismiss' => 'modal'} Close
+.row#pool_container
+  =render partial: 'pools'
