@@ -6,9 +6,9 @@ PiMiner::Application.routes.draw do
   get 'pools', to: 'home#pools'
 
   # Device management
-  match '/device/:id', to: 'device#show', as: 'show_device'
-  match '/device/:id/disable', to: 'device#disable', as: 'disable_device'
-  match '/device/:id/enable', to: 'device#enable', as: 'enable_device'
+  match '/device/:type/:id', to: 'device#show', as: 'show_device'
+  match '/device/:type/:id/disable', to: 'device#disable', as: 'disable_device'
+  match '/device/:type/:id/enable', to: 'device#enable', as: 'enable_device'
 
   # Pool management
   match '/pool/:id/disable', to: 'pool#disable', as: 'disable_pool'

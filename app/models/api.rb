@@ -103,18 +103,18 @@ class Api # A very simple api wrapper that caches results
         next unless dev.has_key?(type)
         raise 'Device with multiple types' if dev.has_key?(:type)
         dev[:type] = type
+        dev[:id] = dev[dev[:type]]
       end
       dev
     end
     mapped
   end
 
-  def device(id)
-    devices.keep_if { |e| e[:id] == id }.first
+  def device(type, id)
+    devices.keep_if { |e| e[:type] == type and e[:id] == id }.first
   end
 
-  def enable_device(id)
-    type = device(id)[:type]
+  def enable_device(type, id)
     case type
       when :gpu then
         gpuenable(id)
@@ -127,8 +127,7 @@ class Api # A very simple api wrapper that caches results
     end
   end
 
-  def disable_device(id)
-    type = device(id)[:type]
+  def disable_device(type, id)
     case type
       when :gpu then
         gpudisable(id)
