@@ -209,7 +209,7 @@ $ ->
     return unless name
     doRefresh(name)
   )
-  $('body').on 'ajax:complete', '*[data-refresh]', (evt) ->
+  $('body').on 'ajax:complete', '*[data-refresh]', (evt, xhr, status) ->
     name = $(this).data('refresh')
     return unless name
     doRefresh(name)

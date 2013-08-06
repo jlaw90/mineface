@@ -36,7 +36,8 @@ class ApplicationController < ActionController::Base
 
   def json_protect
     begin
-      render json: {status: :ok, result: yield}
+      res = yield
+      render json: {status: :ok, result: res} unless performed?
     rescue Exception => e
       render json: {status: :err, message: e.to_s}, status: 500
     end

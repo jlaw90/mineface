@@ -5,35 +5,43 @@ class HomeController < ApplicationController
   end
 
   def chart
-    @start = Time.at(params[:start].to_i).to_datetime
-    @interval = params[:interval].to_i
-    render json: {
-        title: @title,
-        start: @start.to_i*1000,
-        data: get_data(@start, @interval)
-    }
+    json_protect do
+      @start = Time.at(params[:start].to_i).to_datetime
+      @interval = params[:interval].to_i
+      render json: {
+          title: @title,
+          start: @start.to_i*1000,
+          data: get_data(@start, @interval)
+      }
+    end
   end
 
   def overview
-    @devs = miner.devices
-    unless @devs.empty?
-      @sum = miner.summary
-      @speed = mhash_to_s(@devs.map { |dev| dev[:mhs_5s] }.reduce(:+))
+    json_protect do
+      @devs = miner.devices
+      unless @devs.empty?
+        @sum = miner.summary
+        @speed = mhash_to_s(@devs.map { |dev| dev[:mhs_5s] }.reduce(:+))
+      end
+      render layout: false
     end
-    render layout: false
   end
 
   def devices
-    # Get device json data
-    miner.devices
-    @devs = miner.devices
-    render layout: false, partial: 'devices'
+    json_protect do
+      # Get device json data
+      miner.devices
+      @devs = miner.devices
+      render layout: false, partial: 'devices'
+    end
   end
 
   def pools
-    @pools = miner.pools
-    miner.summary
-    render layout: false, partial: 'pools'
+    json_protect do
+      @pools = miner.pools
+      miner.summary
+      render layout: false, partial: 'pools'
+    end
   end
 
   private
