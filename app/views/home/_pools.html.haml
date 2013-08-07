@@ -11,7 +11,7 @@
   %table.table.table-striped
     %thead
       %tr
-        %th Priority
+        %th.text-center Priority
         %th URL
         %th User
         %th Status
@@ -25,18 +25,28 @@
             .text-center No pool information available
       -else
         -@pools.each do |pool|
-          %tr{class: pool[:status] == :alive ? :success: pool[:status] == :disabled ? :warning: :danger, id: "pool#{pool[:pool]}"}
-            %td
+          %tr{class: pool[:status] == :alive ? :success: pool[:status] == :disabled ? :warning: :danger, id: "pool#{pool[:id]}"}
+            %td.text-center
               =pool[:priority]
               -if privileged?
                 %span.priority-change{style: 'position: relative'}
-                  %a.pri-up{class: pool[:priority] == 0 ? 'disabled': ''}<>
-                    %i.icon-angle-up
-                  %a.pri-down{class: pool[:priority] == @pools.length - 1? 'disabled': ''}<>
-                    %i.icon-angle-down
+                  - dolink = pool[:priority] != 0
+                  - if dolink
+                    =link_to pool_up_path(pool[:id]), remote: true, data: {refresh: 'pools', perform: 'Changing pool priority'}, class: 'pri-up' do
+                      %i.icon-angle-up
+                  -else
+                    %a.disabled.pri-up
+                      %i.icon-angle-up
+                  - dolink = pool[:priority] < @pools.length-1
+                  - if dolink
+                    =link_to pool_down_path(pool[:id]), remote: true, data: {refresh: 'pools', perform: 'Changing pool priority'}, class: 'pri-down' do
+                      %i.icon-angle-down
+                  - else
+                    %a.disabled.pri-down
+                      %i.icon-angle-down
 
-            %td{id: "pool#{pool[:pool]}_url"}=pool[:url]
-            %td{id: "pool#{pool[:pool]}_user"}=pool[:user]
+            %td{id: "pool#{pool[:id]}_url"}=pool[:url]
+            %td{id: "pool#{pool[:id]}_user"}=pool[:user]
             %td=pool[:status].to_s.titleize
             %td
               :ruby
@@ -51,14 +61,14 @@
             - if privileged?
               %td.text-center
                 %span.option-link
-                  =link_to(pool[:status] == :disabled ? enable_pool_path(pool[:pool]): disable_pool_path(pool[:pool]), remote: true, data: {refresh: 'pools'}) do
+                  =link_to(pool[:status] == :disabled ? enable_pool_path(pool[:id]): disable_pool_path(pool[:id]), remote: true, data: {refresh: 'pools', perform: 'Toggling pool'}) do
                     %i{class: "icon-check#{pool[:status] == :disabled ? '-empty': ''}", title: pool[:status] == :disabled ? 'Enable pool': 'Disable pool'}<>
+                -#%span.option-link
+                -#  =link_to(update_pool_path(pool[:id]), onclick: 'return false', data: {poolEdit: pool[:id]}) do
+                -#    %span{title: 'Settings'}<>
+                -#      %i.icon-wrench
                 %span.option-link
-                  =link_to(update_pool_path(pool[:pool]), onclick: 'return false', data: {poolEdit: pool[:pool]}) do
-                    %span{title: 'Settings'}<>
-                      %i.icon-wrench
-                %span.option-link
-                  =link_to(delete_pool_path(pool[:pool]), remote: true, data: {confirm: 'Are you sure you want to delete this pool?', refresh: 'pools'}) do
+                  =link_to(delete_pool_path(pool[:id]), remote: true, data: {confirm: 'Are you sure you want to delete this pool?', refresh: 'pools', perform: 'Deleting pool'}) do
                     %span{title: 'Delete'}<>
                       %i.icon-trash
   -if privileged?

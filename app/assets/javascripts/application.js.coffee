@@ -2,24 +2,19 @@
 #= require jquery_ujs
 #= require twitter/bootstrap
 
-window._refreshFuncs = []
 window._refreshMap = {}
 window.startTime = new Date().getTime()
-window._alerts = []
+window._alerts = {}
 
-default_refresh = 500
+default_refresh = 5
 
 window.addRefreshFunction = (name, funcy, interval = default_refresh) ->
   funcy.refresh_interval = interval
   funcy.refresh_pause = false
-  _refreshFuncs.push(funcy)
   window._refreshMap[name] = funcy
 
 window.removeRefreshFunction = (name) ->
-  window._refreshMap[name] = null
-  idx = _refreshFuncs.indexOf(funcy)
-  return if (idx == -1)
-  _refreshFuncs.splice(idx, 1)
+  delete window._refreshMap[name]
 
 window.changeRefreshInterval = (name, interval) ->
   func = window._refreshMap[name]
@@ -39,15 +34,14 @@ window.doRefresh = (name) ->
 
 window.refresh = () ->
   window.time = Math.round((new Date().getTime() - window.startTime) / 1000)
-  for i in [0..._refreshFuncs.length]
-    func = _refreshFuncs[i]
-    continue if func.refresh_pause == true
+  $.each(window._refreshMap, (name, func) ->
+    return if func.refresh_pause == true
     last = func.refresh_last || 0
     delta = window.time - last
     mod = delta % func.refresh_interval
     if mod == 0
-      func.refresh_last = window.time
-      func()
+      doRefresh(name)
+  )
   setTimeout(refresh, 1000)
 
 supports_html5_storage = ->
@@ -88,32 +82,39 @@ window.modalConfirm = (message, title = null) ->
   $('#message-icon').attr('class', 'icon-question-sign')
   $('#message-cancel').show()
   modal = $('#message-modal')
-  modal.attr('data-result', '')
+  modal.removeAttr('data-result')
   modal.modal('show')
 
 window.userAlert = (id, message, title, show = false, type = null) ->
-  return if $("\#show_alert#{id}").length > 0
+  return if window._alerts[id]?
   if show
     return bootstrapAlert(id, message, title, type) # Show, don't push
   alert = {id: id, message: message, title: title, type: type}
-  idx = window._alerts.push(alert) - 1
+
+  window._alerts[id] = alert
   $('#no_alerts').hide()
-  $('#alert_count').text(window._alerts.length.toString())
+  $('#alert_count').text(Object.keys(window._alerts).length.toString())
   li = $('<li></li>')
   link = $('<a></a>')
   link.addClass('menuitem')
-  link.attr('id', "show_alert#{idx}")
+  link.attr('id', "show_alert#{id}")
   link.attr('href', '#')
   link.attr('onclick', 'return false')
   link.text(title)
   li.append(link)
+  close = $('<a></a>')
+  close.attr('data-dismiss', 'alert')
+  close.attr('data-alertid', "#{id}")
+  close.attr('href', '#')
+  close.css('float', 'right')
+  close.html("&times;")
+  li.append(close)
   ul = $('#alert-dropdown')
   ul.append(li)
-  link.attr('data-alertidx', "#{idx}")
+  link.attr('data-alertid', "#{id}")
 
 
 window.bootstrapAlert = (id, message, title, type = null) ->
-  $("\##{id}").remove()
   modal = $('#alert_modal')
   content = modal.children('.modal-content')
   content.attr('class', (i, c) ->
@@ -124,13 +125,10 @@ window.bootstrapAlert = (id, message, title, type = null) ->
   $('#alert_container').text(message)
   modal.modal('show')
 
-window.removeAlert = (id) ->
-  $("\##{id}").fadeOut()
-
 window.processAjaxError = (title, xhr, show = false) ->
   message = "Server returned status code #{xhr.status}: #{xhr.statusText}"
-  if xhr.responseText? && xhr.responseText != ''
-    message = JSON.parse(xhr.responseText).message
+  if xhr.responseText? && xhr.responseText != '' && xhr.responseText.charAt(0) == '{'
+    message = $.parseJSON(xhr.responseText).message
   userAlert(title, message, "Error while #{title}", show)
 
 window.updateOverview = ->
@@ -144,18 +142,17 @@ window.showWait = (msg) ->
 window.hideWait = ->
   $('#progress_modal').modal('hide')
 
-window.showAlert = (idx) ->
-  alert = window._alerts[idx]
+window.showAlert = (id) ->
+  alert = window._alerts[id]
   bootstrapAlert(alert.id, alert.message, alert.title, alert.type || null)
 
-window.removeAlert = (idx) ->
-  window._alerts.splice(idx, 1)
-  $("#show_alert#{idx}").remove()
-  if window._alerts.length == 0
-    $('#no_alerts').show()
-    $('#alert_count').text('')
-  else
-    $('#alert_count').text(window._alerts.length.toString())
+window.removeAlert = (id) ->
+  alrt = window._alerts[id]
+  delete window._alerts[id]
+  $("#show_alert#{alrt.id}").remove()
+  size = Object.keys(window._alerts).length
+  $('#no_alerts').show() if size == 0
+  $('#alert_count').text(if size == 0 then '' else size.toString())
 
 $.rails.allowAction = (link) ->
   return true if link.data('confirmed') or !link.data('confirm')
@@ -188,28 +185,52 @@ $.rails.allowAction = (link) ->
 
 addRefreshFunction('overview', window.updateOverview)
 $ ->
+  # Configure AJAX settings
   $.ajaxSetup({
     cache: false,
     timeout: 10000})
+  # Start our refresh function
   setTimeout(refresh, 0);
-  $('body').on('click', '*[data-alertidx]', (evt) ->
-    idx = $(this).data('alertidx')
-    showAlert(idx)
-    removeAlert(idx)
+
+  # Show the alert data after clicking...
+  $('body').on('click', '*[data-alertid]', (evt) ->
+    id = $(this).data('alertid')
+    if($(this).data('dismiss') != 'alert')
+      showAlert(id)
+    removeAlert(id)
   )
+
+  # Show the previous modal after a message modal if one existed (simple layering)
   $('#message-modal').on('hide.bs.modal', ->
     return unless window.prev_modal?
     mod = prev_modal
-    window.prev_modal = null
+    delete window.prev_modal
     mod.modal('show')
   )
-  $('body').on('click', '*[data-refresh]', (evt) ->
-    return if $(this).data('remote') # Handle confirm callback instead
-    name = $(this).data('refresh')
-    return unless name
-    doRefresh(name)
-  )
-  $('body').on 'ajax:complete', '*[data-refresh]', (evt, xhr, status) ->
-    name = $(this).data('refresh')
-    return unless name
-    doRefresh(name)
+
+  # Show progress on ajax link click
+  $('body').on 'ajax:beforeSend', (evt) ->
+    e = $(evt.target)
+    ref = e.data('refresh')
+    if ref
+      if e.data('remote')
+        setRefreshPaused(ref, true)
+      else
+        doRefresh(ref)
+    if e.data('perform')
+      window._lastAjax = evt.target
+      showWait(e.data('perform'))
+    e.one('ajax:complete', (evt, xhr, status) ->
+      e = $(evt.target)
+      if e.data('perform') && window._lastAjax == evt.target
+        hideWait()
+      ref = e.data('refresh')
+      if ref
+        setRefreshPaused(ref, false)
+        doRefresh(ref)
+      unless xhr.status == 200
+        msg = $(evt.target).data('perform') || 'performing ajax action'
+        msg = msg.toLowerCase()
+        processAjaxError(msg, xhr, true)
+    )
+    true

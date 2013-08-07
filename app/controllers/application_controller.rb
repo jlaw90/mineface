@@ -5,7 +5,7 @@ class ApplicationController < ActionController::Base
   helper_method :app_name, :app_version, :elapsed_time, :mhash_to_s, :miner, :privileged?, :json_protect
 
   def init
-    @start_time = Time.now
+    @start_time ||= Time.now
   end
 
   def app_name
@@ -39,6 +39,7 @@ class ApplicationController < ActionController::Base
       res = yield
       render json: {status: :ok, result: res} unless performed?
     rescue Exception => e
+      puts e.backtrace
       render json: {status: :err, message: e.to_s}, status: 500
     end
   end

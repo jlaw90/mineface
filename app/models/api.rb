@@ -5,6 +5,12 @@ class Api # A very simple api wrapper that caches results
   require 'socket'
   require 'json'
 
+  Messages = {# Todo: define user-friendly error messages, maybe even localise
+              51 => "You can't disable the only active pool",
+              66 => "You can't delete the only active pool",
+              67 => "Can't remove this pool as it's currently active"
+  }
+
   attr_accessor :port, :host
 
   def self.create
@@ -53,7 +59,7 @@ class Api # A very simple api wrapper that caches results
       when 'W'
         logger.info "Warning from API [#{c}]: #{msg}"
       else
-        raise "#{sc}: #{msg}"
+        raise Messages[c] || "#{c}: #{msg}"
     end
 
     data = sanitise(data)
@@ -75,6 +81,7 @@ class Api # A very simple api wrapper that caches results
   def pools
     query('pools')[:data][:pools].each do |pool|
       pool[:status] = pool[:status].downcase.to_sym
+      pool[:id] = pool[:pool]
     end
   end
 
@@ -82,14 +89,16 @@ class Api # A very simple api wrapper that caches results
     pools.keep_if { |e| e[:id] == id }.first
   end
 
+  # Todo: this won't work if there was only one pool and the new pool is invalid... (sigh)
   def update_pool(pool)
     addpool(pool[:url], pool[:user], pool[:pass]) # Add the new one
     pools = self.pools
     new = pools.last
-    new[:priority] = pools[pool[:id]][:priority] # Set priorities
-    pools[pool[:id]][:priority] = pools.length + 5
+    new[:priority], pools[pool[:id]][:priority] = pools[pool[:id]][:priority], new[:priority]
     order = pools.sort { |a, b| a[:priority] <=> b[:priority] }.map { |p| p[:pool] }
     poolpriority(*order) # Change pool priorities
+    disablepool(pool[:id]) # Disable the old pool
+    sleep(0.5) # Todo: nasty hack...
     removepool(pool[:id]) # Remove the old pool
   end
 

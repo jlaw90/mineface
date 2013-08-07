@@ -13,14 +13,14 @@
           %form.form-horizontal
             %label.col-lg-3.col-sm-3.control-label Range:
             .col-lg-4.col-sm-4
-              =select('range_value', 'select', 1...30, {}, class: 'form-control input-small')
+              =select('range_value', 'select', 1..30, {}, class: 'form-control input-small')
             .col-lg-5.col-sm-5
               =select('range_unit', 'select', time, {}, class: 'form-control input-small')
         .col-lg-4.col-sm-5
           %form.form-horizontal
             %label.col-lg-3.col-sm-3.control-label Interval:
             .col-lg-4.col-sm-4
-              =select('interval_value', 'select', 1...30, {}, class: 'col-lg-4 form-control input-small')
+              =select('interval_value', 'select', [1, 5, 10, 15, 30, 60], {}, class: 'col-lg-4 form-control input-small')
             .col-lg-5.col-sm-5
               =select('interval_unit', 'select', time, {}, class: 'col-lg-5 form-control input-small')
     #chart_panel_content

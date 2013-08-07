@@ -16,5 +16,7 @@ PiMiner::Application.routes.draw do
   match '/pool/:id/delete', to: 'pool#delete', as: 'delete_pool'
   match '/pool/new', to: 'pool#new', as: 'new_pool'
   match '/pool/create', to: 'pool#create', as: 'create_pool'
+  match '/pool/:id/priup/', to: 'pool#up', as: 'pool_up'
+  match '/pool/:id/pridown', to: 'pool#down', as: 'pool_down'
   match '/pool/:id/update', to: 'pool#update', as: 'update_pool'
 end

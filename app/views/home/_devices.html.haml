@@ -34,7 +34,7 @@
             %td
               =status.to_s.titleize
               -if dev[:type] != :cpu && privileged?
-                =link_to(status == :disabled ? enable_device_path(dev[:type], dev[:id]): disable_device_path(dev[:type], dev[:id]), remote: true, data: {refresh: 'devs'}) do
+                =link_to(status == :disabled ? enable_device_path(dev[:type], dev[:id]): disable_device_path(dev[:type], dev[:id]), remote: true, data: {refresh: 'devs', perform: 'Toggling device'}) do
                   %i{class: "icon-check#{status == :disabled ? '-empty': ''}", title: status == :disabled ? 'Enable device': 'Disable device'}<>
             %td= dev[:temperature].nil?? 'N/A': dev[:temperature].round(2)
             %td=mhash_to_s(dev[:mhs_5s])
