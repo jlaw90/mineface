@@ -23,7 +23,7 @@
               =select('interval_value', 'select', [1, 5, 10, 15, 30, 60], {}, class: 'col-lg-4 form-control input-small')
             .col-lg-5.col-sm-5
               =select('interval_unit', 'select', time, {}, class: 'col-lg-5 form-control input-small')
-    #chart_panel_content
+    #chart_panel_content.panel-content
       = render partial: 'hashchart'
     :javascript
       // Some stuff for the rest of our js

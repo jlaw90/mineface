@@ -85,34 +85,40 @@ window.modalConfirm = (message, title = null) ->
   modal.removeAttr('data-result')
   modal.modal('show')
 
-window.userAlert = (id, message, title, show = false, type = null) ->
+window.alertOverlay = (message, title, type, alertTarget) ->
+  target = $(alertTarget)
+  ov = target.children('.alert-overlay')
+  if ov.length == 0
+    ov = $('<div></div>')
+    ov.css({'position': 'absolute', 'left': '0px', 'top': '0px', 'width': '100%', 'height': '100%', 'z-index': '999'})
+    ov.hide()
+    target.append(ov)
+  ov.fadeIn()
+  ov.empty()
+
+  if title
+    head = $('<h4></h4>')
+    head.text(title)
+    ov.append(head)
+
+  content = $('<p></p>')
+  content.text(message)
+  ov.append(content)
+
+  ov.attr('class', (i, c) ->
+    (c || '').replace(/\balert-\S+/g, '') # Remove previous alert classes
+  )
+  ov.addClass('alert-overlay')
+  ov.addClass('alert')
+  ov.addClass("alert-#{type}") if type?
+
+
+window.userAlert = (id, message, title, show = false, type = null, alertTarget = null) ->
   return if window._alerts[id]?
   if show
     return bootstrapAlert(id, message, title, type) # Show, don't push
-  alert = {id: id, message: message, title: title, type: type}
-
-  window._alerts[id] = alert
-  $('#no_alerts').hide()
-  $('#alert_count').text(Object.keys(window._alerts).length.toString())
-  li = $('<li></li>')
-  link = $('<a></a>')
-  link.addClass('menuitem')
-  link.attr('id', "show_alert#{id}")
-  link.attr('href', '#')
-  link.attr('onclick', 'return false')
-  link.text(title)
-  li.append(link)
-  close = $('<a></a>')
-  close.attr('data-dismiss', 'alert')
-  close.attr('data-alertid', "#{id}")
-  close.attr('href', '#')
-  close.css('float', 'right')
-  close.html("&times;")
-  li.append(close)
-  ul = $('#alert-dropdown')
-  ul.append(li)
-  link.attr('data-alertid', "#{id}")
-
+  if alertTarget
+    return alertOverlay(message, title, type, alertTarget)
 
 window.bootstrapAlert = (id, message, title, type = null) ->
   modal = $('#alert_modal')
@@ -125,14 +131,24 @@ window.bootstrapAlert = (id, message, title, type = null) ->
   $('#alert_container').text(message)
   modal.modal('show')
 
-window.processAjaxError = (title, xhr, show = false) ->
+window.processAjaxError = (title, xhr, show = false, alertTarget = null) ->
+  userAlert(title, getErrorMessage(xhr), "Error #{title}", show, 'severe', alertTarget)
+
+window.getErrorMessage = (xhr) ->
   message = "Server returned status code #{xhr.status}: #{xhr.statusText}"
   if xhr.responseText? && xhr.responseText != '' && xhr.responseText.charAt(0) == '{'
     message = $.parseJSON(xhr.responseText).message
-  userAlert(title, message, "Error while #{title}", show)
+  message
 
 window.updateOverview = ->
-  $('#overview').load('/overview')
+  ov = $('#overview')
+  $.get('/overview', null,(data, status, xhr) ->
+    ov.removeClass('text-danger')
+    ov.html(data)
+  ).fail((data) ->
+    ov.addClass('text-danger')
+    ov.html(getErrorMessage(data))
+  )
 
 window.showWait = (msg) ->
   text = $('#progress_modal').find('#wait-message')
@@ -141,18 +157,6 @@ window.showWait = (msg) ->
 
 window.hideWait = ->
   $('#progress_modal').modal('hide')
-
-window.showAlert = (id) ->
-  alert = window._alerts[id]
-  bootstrapAlert(alert.id, alert.message, alert.title, alert.type || null)
-
-window.removeAlert = (id) ->
-  alrt = window._alerts[id]
-  delete window._alerts[id]
-  $("#show_alert#{alrt.id}").remove()
-  size = Object.keys(window._alerts).length
-  $('#no_alerts').show() if size == 0
-  $('#alert_count').text(if size == 0 then '' else size.toString())
 
 $.rails.allowAction = (link) ->
   return true if link.data('confirmed') or !link.data('confirm')

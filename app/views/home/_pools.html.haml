@@ -8,7 +8,7 @@
     %small.text-muted#devices_overview
       - unless @pools.empty?
         =pluralize(@pools.length, 'pool')
-  %table.table.table-striped
+  %table.table.table-striped.panel-content
     %thead
       %tr
         %th.text-center Priority

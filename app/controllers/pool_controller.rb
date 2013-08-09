@@ -3,6 +3,7 @@ class PoolController < ApplicationController
     json_protect do
       url, user, pass = params.values_at(*%w(url user pass))
       miner.addpool(url, user, pass)
+      miner.save
       nil
     end
   end
@@ -14,24 +15,28 @@ class PoolController < ApplicationController
     json_protect do
       id, url, user, pass = params.values_at(*%w(id url user pass))
       miner.update_pool({id: id.to_i, url: url, user: user, pass: pass})
+      miner.save
     end
   end
 
   def delete
     json_protect do
       miner.removepool(params[:id].to_i)
+      miner.save
     end
   end
 
   def enable
     json_protect do
       miner.enablepool(params[:id].to_i)
+      miner.save
     end
   end
 
   def disable
     json_protect do
       miner.disablepool(params[:id].to_i)
+      miner.save
     end
   end
 

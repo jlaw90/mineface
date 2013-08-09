@@ -10,5 +10,3 @@ end
 scheduler.every("1m") do
   add_point
 end
-
-add_point # Add a point on startup so the graph isn't blank..

@@ -8,9 +8,7 @@ $ ->
   window.refreshChart = ->
     chartInterval = (intvalsel.val() * intunsel.val())
     chartRange = rangevalsel.val() * rangeunsel.val()
-    window._chartRefreshTime = window.time
     chart.showLoading() if chartInterval != refreshChart.refresh_interval || chartRange != refreshChart.last_range
-    refreshChart.refresh_interval = chartInterval
     refreshChart.last_range = chartRange
 
     start = (new Date().getTime() / 1000) - chartRange
@@ -21,26 +19,30 @@ $ ->
       interval: chartInterval
     }
     $.get('/chart', params,(data, status, xhr) ->
+      refreshChart.refresh_interval = chartInterval # We loaded, change the chart interval...
       if chart.series.length == 0
         chart.addSeries({}, false)
       series = chart.series[0]
       series.update({pointInterval: chartInterval * 1000, pointStart: start * 1000})
       series.setData(data.data)
       chart.hideLoading()
+      # Chart isn't re-created on success, so we might need to hide the error alert...
+      $('#chart_container .panel-content .alert-overlay').fadeOut()
     , 'json').fail (data) ->
-      processAjaxError('retrieving chart data', data)
+      refreshChart.refresh_interval = 5 # Try again in 5 seconds...
+      processAjaxError('retrieving chart data', data, false, '#chart_container .panel-content')
 
   window.refreshDevices = ->
     $.get('/devices', null,(data, status, xhr) ->
       $('#device_container').html($(data))
     ).fail (data) ->
-      processAjaxError('retrieving device information', data)
+      processAjaxError('retrieving device information', data, false, '#device_container .panel-content')
 
   window.refreshPools = ->
     $.get('/pools', null,(data, status, xhr) ->
       $('#pool_container').html($(data))
     ).fail (data) ->
-      processAjaxError('retrieving pool information', data)
+      processAjaxError('retrieving pool information', data, false, '#pool_container .panel-content')
 
   # Load last selected chart
   rangevalsel.val(sget('hchart_range_value', 24)) # 24
@@ -63,9 +65,9 @@ $ ->
     changeHandle(this, 'interval_unit')
 
   # Add refresh functions
-  addRefreshFunction('chart', refreshChart)
   addRefreshFunction('devs', refreshDevices)
   addRefreshFunction('pools', refreshPools)
+  addRefreshFunction('chart', refreshChart)
 
   # New pool
   $('body').on('click', '#new_pool', (evt) ->

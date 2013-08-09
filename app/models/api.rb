@@ -1,6 +1,3 @@
-$api_host = '192.168.0.6'
-$api_port = 4028
-
 class Api # A very simple api wrapper that caches results
   require 'socket'
   require 'json'
@@ -14,7 +11,7 @@ class Api # A very simple api wrapper that caches results
   attr_accessor :port, :host
 
   def self.create
-    @@inst ||= Api.new($api_host, $api_port)
+    @@inst ||= Api.new(ENV['api_host'] || 'localhost', ENV['api_port'] || 4028)
   end
 
   def privileged?
@@ -38,7 +35,11 @@ class Api # A very simple api wrapper that caches results
     end
     req = req.to_json
 
-    s = TCPSocket.open(@host, @port)
+    begin
+      s = TCPSocket.open(@host, @port)
+    rescue
+      raise "Failed to connect to miner at #@host:#@port"
+    end
     s.write req
     data = s.read.strip
     # Okay, nasty, can have control character.... let's strip 'em!
@@ -63,7 +64,7 @@ class Api # A very simple api wrapper that caches results
     end
 
     data = sanitise(data)
-    return {status: :ok, code: c, message: msg, data: data}
+    {status: :ok, code: c, message: msg, data: data}
   end
 
   def method_missing(name, *args)

@@ -17,17 +17,8 @@
           %ul.nav.navbar-nav
             %li.active
               %a{href: '#'} Home
-          %ul.nav.navbar-nav.pull-right
-            %li.dropdown
-              %a.dropdown-toggle#alert-drop{href: '#', 'data-toggle' => 'dropdown'}
-                %i.icon-bell-alt
-                Alerts
-                %span.badge#alert_count
-                %b.caret
-              %ul.dropdown-menu#alert-dropdown{role: :menu, 'aria-labelledby' => '#alert-drop'}
-                %li
-                  .text-center.text-muted#no_alerts No new alerts
         .navbar-text.text-right#overview
+          Connecting to miner...
     .container
       .modal.fade#alert_modal
         .modal-dialog

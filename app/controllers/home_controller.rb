@@ -19,10 +19,9 @@ class HomeController < ApplicationController
   def overview
     json_protect do
       @devs = miner.devices
-      unless @devs.empty?
-        @sum = miner.summary
-        @speed = mhash_to_s(@devs.map { |dev| dev[:mhs_5s] }.reduce(:+))
-      end
+      @sum = miner.summary
+      @ver = miner.version
+      @speed = mhash_to_s(@devs.map { |dev| dev[:mhs_5s] }.reduce(:+))
       render layout: false
     end
   end
