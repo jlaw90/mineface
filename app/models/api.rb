@@ -11,7 +11,7 @@ class Api # A very simple api wrapper that caches results
   attr_accessor :port, :host
 
   def self.create
-    @@inst ||= Api.new(ENV['api_host'] || 'localhost', ENV['api_port'] || 4028)
+    @@inst ||= Api.new(ENV['api_host'] || 'localhost', (ENV['api_port'] || 4028).to_i)
   end
 
   def privileged?
@@ -23,7 +23,7 @@ class Api # A very simple api wrapper that caches results
     end
   end
 
-  def initialize(host='localhost', port=4028)
+  def initialize(host, port)
     @host, @port = host, port
   end
 

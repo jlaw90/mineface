@@ -1,1 +1,1 @@
-$redis = Redis.new(:host => 'localhost', :port => 6379)
+$redis ||= Redis.new(:host => ENV['redis_host'] || 'localhost', :port => (ENV['redis_port'] || 6379).to_i)

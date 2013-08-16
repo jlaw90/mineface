@@ -3,6 +3,9 @@
       $(function(){
           Highcharts.setOptions({global:{useUTC: false}});
           chart = new Highcharts.Chart({
+            credits: {
+              enabled: false
+            },
             chart: {
               renderTo: 'hashchart'
             }, title: {

@@ -217,8 +217,13 @@ $ ->
     e = $(evt.target)
     ref = e.data('refresh')
     if ref
-      if e.data('remote')
+      if e.data('remote') # We need to wait...
         setRefreshPaused(ref, true)
+        # Page may have been refreshed already, check this eventuality
+        ele = e[0]
+        unless $.contains(document.documentElement, ele)
+          debugger
+          e = $("#{e.attr('id')}")
       else
         doRefresh(ref)
     if e.data('perform')
