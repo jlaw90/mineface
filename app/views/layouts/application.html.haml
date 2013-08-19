@@ -9,16 +9,16 @@
     .navbar.navbar-fixed-top
       .container
         %a.navbar-brand=app_name
-        %button.navbar-toggle{:'data-toggle' => :collapse, :'data-target' => '.navbar-responsive-collapse'}
+        %button.navbar-toggle{'data-toggle' => :collapse, 'data-target' => '.navbar-responsive-collapse'}
           %span.icon-bar
           %span.icon-bar
           %span.icon-bar
         .nav-collapse.collapse.navbar-responsive-collapse
           %ul.nav.navbar-nav
             %li.active
-              %a{href: '#'} Home
-        .navbar-text.text-right#overview
-          Connecting to miner...
+              %a{href: '#'}=t('menu.home')
+        .navbar-text.pull-right#overview
+          =t('message.connecting')
     .container
       .modal.fade#alert_modal
         .modal-dialog
@@ -26,8 +26,7 @@
             .modal-header
               %h4
                 %i.icon-bell-alt
-                %span#alert-title
-                  Alert
+                %span#alert-title{'data-default' => t('title.alert')}=t('title.alert')
                 %button.close{'data-dismiss' => 'modal', 'aria-hidden' => true} &times;
             .modal-body#alert_container
             .modal-footer
@@ -39,13 +38,12 @@
           .modal-header
             %h4
               %i#message-icon.icon-info-sign
-              %span#message-title
-                Message
+              %span#message-title{'data-default' => t('title.message')}=t('title.message')
               %button.close{'data-dismiss' => 'modal', 'data-target' => '#message-modal', 'aria-hidden' => true} &times;
           .modal-body#message
           .modal-footer
-            %button#message-ok.btn.btn-primary{'data-dismiss' => 'modal', 'aria-hidden' => true} Ok
-            %button#message-cancel.btn.btn-default{'data-dismiss' => 'modal', 'aria-hidden' => true} Cancel
+            %button#message-ok.btn.btn-primary{'data-dismiss' => 'modal', 'aria-hidden' => true}=t('verb.ok').titleize
+            %button#message-cancel.btn.btn-default{'data-dismiss' => 'modal', 'aria-hidden' => true}=t('verb.cancel').titleize
 
     .modal.fade#progress_modal
       .modal-dialog
@@ -53,13 +51,13 @@
           .modal-header
             %h4
               %i.icon-cogs
-              %span#wait-message
-                Please wait...
+              %span#wait-message{'data-default' => t('message.wait')}
+                =t('message.wait')
           .modal-body
             .progress.progress-striped.active
               .progress-bar{style: 'width: 100%'}
-                %span#wait-message
-                  Please wait...
+                %span#wait-message{'data-default' => t('message.wait')}
+                  =t('message.wait')
 
     .modal.fade#donate_modal
       .modal-dialog
@@ -67,59 +65,38 @@
           .modal-header
             %h4
               %i.icon-btc
-              Donate
+              =t('verb.donate').titleize
               %button.close{'data-dismiss' => 'modal', 'aria-hidden' => true} &times;
           .modal-body
-            .text-info
-              All donations will go towards development of applications relating to bitcoin such as this and a few other
-              projects I have under development.  Thanks!
+            .text-info=t('donation_content')
             %br
             .input-group
               %span.input-group-addon{onclick: "$('#donate_address').select()", style: 'cursor: pointer'}
                 %i.icon-btc
               %input.form-control#donate_address{type: :text, value: '17UQa8vbadrw6NzqZfbgi2WdQDHqjWma7N', onclick: "$('#donate_address').select()", readonly: :readonly, style: 'cursor:pointer'}
           .modal-footer
-            %button.btn.btn-default{'data-dismiss' => 'modal'} Close
+            %button.btn.btn-default{'data-dismiss' => 'modal'}=t('verb.close').titleize
 
     %footer
       .container
         .row.text-center
           =app_name
-          is free software created by
-          =link_to 'James Lawrence', 'http://www.sqrt4.com', target: '_blank'
-          in his spare time.  If you like it,
+          =(t('footer.content') % link_to('James Lawrence', 'http://www.sqrt4.com', target: '_blank')).html_safe
           %a{'data-toggle' => 'modal', href: '#donate_modal'}
             %i.icon-btc
-            donate
+            =t('verb.donate')
         .row.text-center
           =link_to('#email' ,class: 'pad-horizontal') do
             %i.icon-envelope
-            Message Me
+            =t('footer.link.contact')
           |
           =link_to('#linkedin', class: 'pad-horizontal') do
             %i.icon-briefcase
-            Hire Me
-          |
-          =link_to('#sqrt4', class: 'pad-horizontal') do
-            %i.icon-eye-open
-            Peruse Me
+            =t('footer.link.hire')
           |
           = link_to('#github', class: 'pad-horizontal') do
             %i.icon-github
-            Fork Me
+            =t('footer.link.fork')
         .row.text-center
           %small
-            Page rendered in
-            =elapsed_time
-            seconds. |
-
-            Powered by
-            =request.headers['SERVER_SOFTWARE']
-        - if !Rails.env.production? && false # Set to true to enable env and header dump
-          %h2.text-center Variable debugging (disable in application.html.haml)
-          -[['Environment', ENV], ['Headers', request.headers]].each do |name,hash|
-            %h4.text-center=name
-            %dl.dl-horizontal
-              -hash.each do |k,v|
-                %dt{title: k}=k
-                %dd=v
+            =t('footer.stats') % [elapsed_time, request.headers['SERVER_SOFTWARE'] || 'Unknown']

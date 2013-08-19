@@ -92,14 +92,12 @@ $ ->
 
   # Save changes
   $('#save_pool').click ->
-    window.prev_modal = $('#pool_settings')
     return popup('Please enter a pool url') unless $('#pool_url').val()
     return popup('Please enter a username') unless $('#pool_user').val()
     return popup('Please enter a password') unless $('#pool_pass').val()
-    delete window.prev_modal
     params = {src: $('#pool_editmode').val(), url: $('#pool_url').val(), user: $('#pool_user').val(), pass: $('#pool_pass').val()}
     showWait(if params.src == 'new' then 'Creating pool' else 'Updating pool')
-    url = if params.src == 'new' then '/pool/create' else "/pool/#{params.src}/update"
+    url = if params.src == 'new' then '/pool/create.json' else "/pool/#{params.src}/update.json"
     $.get(url, params, ((data, status, xhr) ->
       refreshPools(0)
       hideWait()

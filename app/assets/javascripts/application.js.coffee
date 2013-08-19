@@ -5,6 +5,10 @@
 window._refreshMap = {}
 window.startTime = new Date().getTime()
 window._alerts = {}
+window.modalLayers = {
+  visible: null,
+  stack: []
+}
 
 default_refresh = 5
 
@@ -122,7 +126,7 @@ window.userAlert = (id, message, title, show = false, type = null, alertTarget =
 
 window.bootstrapAlert = (id, message, title, type = null) ->
   modal = $('#alert_modal')
-  content = modal.children('.modal-content')
+  content = modal.find('.modal-content')
   content.attr('class', (i, c) ->
     c.replace(/\balert-\S+/g, '') # Remove previous alert classes
   )
@@ -160,11 +164,16 @@ window.hideWait = ->
 
 $.rails.allowAction = (link) ->
   return true if link.data('confirmed') or !link.data('confirm')
-
-  modalConfirm(link.data('confirm'), 'Delete confirmation')
   refresh = link.data('refresh')
   if refresh?
     setRefreshPaused(refresh, true)
+
+  # If we didn't pause it in time, trigger a click on the new element...
+  unless $.contains(document.documentElement, link[0])
+    reclick(link)
+    return false
+
+  modalConfirm(link.data('confirm'), 'Delete confirmation')
 
   okbut = $('#message-ok')
   cancelbut = $('#message-cancel')
@@ -186,6 +195,14 @@ $.rails.allowAction = (link) ->
 
   false
 
+window.reclick = (e) ->
+  id = e.attr('id')
+  console.error('Reclick not handled for multiple elements in dispatchers') if e.length != 1
+  console.error('No id!') unless id?
+  ne = $("##{id}")
+  ne.data('confirmed', e.data('confirmed')) if e.data('confirmed') # Make sure it has the same modal confirmation
+  debugger
+  ne.trigger('click')
 
 addRefreshFunction('overview', window.updateOverview)
 $ ->
@@ -196,6 +213,40 @@ $ ->
   # Start our refresh function
   setTimeout(refresh, 0);
 
+  prevTooltipSource = null
+  addTooltipHandler = (ele) ->
+    return if ele.length == 0
+    $.each(ele, ->
+      ele = $(this)
+      return if ele.data('tooltip_reg')?
+      unless ele.attr('id')
+        console.error('Tooltip source without id attribute')
+        debugger
+        return
+      ele.data('tooltip_reg', 'true')
+      container = ele.parents('*[data-tooltip-container]')
+      opts = {delay: 0, trigger: 'hover focus', title: ele.data('tooltip')}
+      opts.container = container unless container.length == 0
+      ele.tooltip(opts)
+      ele.on('show.bs.tooltip', ->
+        prevTooltipSource = $(this).attr('id'))
+      ele.on('hide.bs.tooltip', ->
+        prevTooltipSource = null if prevTooltipSource == $(this).attr('id'))
+      if prevTooltipSource == ele.attr('id')
+        tt = ele.data('bs.tooltip')
+        p = tt.options.animation
+        tt.options.animation = false
+        tt.show()
+        tt.options.animation = p
+    )
+
+
+  addTooltipHandler($('*[data-tooltip]')) # Bind tooltip to existing elements...
+  $('body').on('DOMNodeInserted', (evt) -> # Bind when new tooltips come down from ajax
+    children = $(evt.target).find('*[data-tooltip]')
+    addTooltipHandler(children) unless children.length == 0
+  )
+
   # Show the alert data after clicking...
   $('body').on('click', '*[data-alertid]', (evt) ->
     id = $(this).data('alertid')
@@ -204,12 +255,26 @@ $ ->
     removeAlert(id)
   )
 
+  # Modal layering
+  $(document).on('shown.bs.modal', (evt) ->
+    top = evt.target
+    id = $(top).attr('id')
+    console.error('modal without ID!') unless id?
+    $(top).find('[data-dismiss="modal"]').attr('data-target', "##{id}")
+    prev = modalLayers.visible
+    modalLayers.stack.push(top)
+    modalLayers.visible = top
+    $(prev).modal('hide') if prev?
+  )
+
   # Show the previous modal after a message modal if one existed (simple layering)
-  $('#message-modal').on('hide.bs.modal', ->
-    return unless window.prev_modal?
-    mod = prev_modal
-    delete window.prev_modal
-    mod.modal('show')
+  $(document).on('hidden.bs.modal', (evt) ->
+    e = evt.target
+    if modalLayers.visible == e
+      modalLayers.visible = null
+      modalLayers.stack.pop()
+      prev = modalLayers.stack.pop()
+      $(prev).modal('show') if prev?
   )
 
   # Show progress on ajax link click
@@ -220,10 +285,9 @@ $ ->
       if e.data('remote') # We need to wait...
         setRefreshPaused(ref, true)
         # Page may have been refreshed already, check this eventuality
-        ele = e[0]
-        unless $.contains(document.documentElement, ele)
-          debugger
-          e = $("#{e.attr('id')}")
+        unless $.contains(document.documentElement, e[0])
+          reclick(id)
+          return false
       else
         doRefresh(ref)
     if e.data('perform')

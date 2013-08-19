@@ -3,22 +3,23 @@
     .panel-heading
       .row
         .col-lg-2
-          %h3.text-left.panel-title{style: 'font-size:26px'}
+          %h3.text-left.panel-title
             %i.icon-bar-chart
-            Charts
+            =t('title.charts')
         / Chart selection
         -day = 60*60*24
         - time = {minutes: 60, hours: 60*60, days: day, weeks: day*7, months: day*28, years: day*365}
+        - time = time.each.map{|k,v| [t("time.#{k.to_s.underscore}"), v]}.inject({}) {|a, v| a[v[0]] = v[1]; a}
         .col-lg-4.col-offset-2.col-lg-offset-2.col-sm-5.col-sm-offset-2
           %form.form-horizontal
-            %label.col-lg-3.col-sm-3.control-label Range:
+            %label.col-lg-3.col-sm-3.control-label="#{t('title.range')}:"
             .col-lg-4.col-sm-4
               =select('range_value', 'select', 1..30, {}, class: 'form-control input-small')
             .col-lg-5.col-sm-5
               =select('range_unit', 'select', time, {}, class: 'form-control input-small')
         .col-lg-4.col-sm-5
           %form.form-horizontal
-            %label.col-lg-3.col-sm-3.control-label Interval:
+            %label.col-lg-3.col-sm-3.control-label="#{t('title.interval')}:"
             .col-lg-4.col-sm-4
               =select('interval_value', 'select', [1, 5, 10, 15, 30, 60], {}, class: 'col-lg-4 form-control input-small')
             .col-lg-5.col-sm-5
@@ -37,24 +38,25 @@
 
 .modal.fade#pool_settings
   .modal-dialog
+    - fid = 'form.pool.settings.'
     .modal-content
       .modal-header
         %h4
           %i.icon-globe
-          Pool settings
+          =t("#{fid}title")
           %button.close{'data-dismiss' => 'modal', 'aria-hidden' => true} &times;
       .modal-body
         .form-group
           %input#pool_editmode{type: :hidden, value: 'unknown'}
-          %label{for: :pool_url} Pool URL
-          %input#pool_url.form-control{placeholder: 'Enter URL'}
-          %p.help-block Format &lt;host&gt;:&lt;port&gt; e.g. pool.50btc.com:8332
-          %label{for: :pool_user} Worker username
-          %input#pool_user.form-control{placeholder: 'Enter username'}
-          %label{for: :pool_pass} Worker password
-          %input#pool_pass.form-control{placeholder: 'Enter password'}
+          %label{for: :pool_url}=t("#{fid}url.name")
+          %input#pool_url.form-control{placeholder: t("#{fid}url.placeholder")}
+          %p.help-block=t("#{fid}url.help")
+          %label{for: :pool_user}=t("#{fid}user.name")
+          %input#pool_user.form-control{placeholder: t("#{fid}user.placeholder")}
+          %label{for: :pool_pass}=t("#{fid}pass.name")
+          %input#pool_pass.form-control{placeholder: t("#{fid}pass.placeholder")}
       .modal-footer
-        %button.btn.btn-primary#save_pool{'data-dismiss' => 'modal'} Save
-        %button.btn.btn-default{'data-dismiss' => 'modal'} Close
+        %button.btn.btn-primary#save_pool{'data-dismiss' => 'modal'}=t('verb.save').titleize
+        %button.btn.btn-default{'data-dismiss' => 'modal'}=t('verb.close').titleize
 .row#pool_container
   =render partial: 'pools'

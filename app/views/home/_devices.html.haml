@@ -1,42 +1,45 @@
--names = ['Accepted', 'Rejected', 'Hardware errors']
+-names = [t('status.accepted'), t('status.rejected'), t('status.hardware_errors')]
 - @devs ||= []
-.panel
-  %h3.panel-heading
-    %i.icon-hdd
-    Devices
-    %small.text-muted#devices_overview
-      - unless @devs.empty?
-        = pluralize(@devs.length, 'device')
-        %span{style: 'font-size: 0.8em'}
-          -types = [[:cpu, 'CPU'], [:gpu, 'GPU'], [:pga, 'FPGA']].map{|a| count = @devs.count{|d| d[:type] == a[0]};count == 0? nil: pluralize(count,a[1])}.compact.join(', ')
-          ="(#{types})"
-  %table.table.table-striped.panel-content
+.panel{'data-tooltip-container' => 'true'}
+  .panel-heading
+    %h3.panel-title
+      %i.icon-hdd
+      =t('device.plural').titleize
+      %small.text-muted#devices_overview
+        - unless @devs.empty?
+          = pluralize(@devs.length, t('device.singular'), t('device.plural'))
+          %span{style: 'font-size: 0.8em'}
+            -types = [:cpu, :gpu, :pga].map{|t| [t, t("device.type.#{t}")]}.map{|a| count = @devs.count{|d| d[:type] == a[0]};count == 0? nil: pluralize(count,a[1])}.compact.join(', ')
+            ="(#{types})"
+  %table.table.table-striped
     %thead
       %tr
-        %th Name
-        %th Type
-        %th Status
-        %th Temp
-        %th{title: '5 second average'} Mh/s
+        %th=t('title.name')
+        %th=t('title.type')
+        %th=t('title.status')
+        %th=t('title.temperature')
+        %th
+          %span#device_5savg{data: { tooltip: t('title.avg_5s')}} Mh/s
         %th=names.join('/')
-        %th Utility
+        %th=t('title.utility')
     %tbody
       -if @devs.length == 0
         %tr
           %td{colspan:7}
-            .text-center No device information available
+            .text-center=t('device.none')
       -else
         -@devs.each do |dev|
-          -status = dev[:enabled]? dev[:status].downcase.to_sym: :disabled
-          %tr{class:  status == :alive ? :success: status == :disabled ? :warning: :danger}
+          - did = "device_#{dev[:type]}#{dev[:id]}"
+          -status = dev[:enabled]? dev[:status].to_s.underscore.to_sym: :disabled
+          %tr{id: did, class:  status == :alive ? :success: status == :disabled ? :warning: :danger}
             %td=dev[:name]
-            %td=dev[:type].to_s.titleize
+            %td=t("device.type.#{dev[:type]}").titleize
             %td
-              =status.to_s.titleize
+              =t("status.#{status}").titleize
               -if dev[:type] != :cpu && privileged?
-                =link_to(status == :disabled ? enable_device_path(dev[:type], dev[:id]): disable_device_path(dev[:type], dev[:id]), remote: true, data: {refresh: 'devs', perform: 'Toggling deviceh'}) do
-                  %i{class: "icon-check#{status == :disabled ? '-empty': ''}", title: status == :disabled ? 'Enable device': 'Disable device'}<>
-            %td= dev[:temperature].nil?? 'N/A': dev[:temperature].round(2)
+                =link_to(status == :disabled ? enable_device_path(dev[:type], dev[:id], :json): disable_device_path(dev[:type], dev[:id], :json), remote: true, data: {refresh: 'devs', perform: t('device.action.progress.toggle')}) do
+                  %i{class: "no_underline icon-check#{status == :disabled ? '-empty': ''}", title: status == :disabled ? t('device.action.enable'): t('device.action.disable')}<>
+            %td= dev[:temperature].nil?? t('message.not_applicable'): dev[:temperature].round(2)
             %td=mhash_to_s(dev[:mhs_5s])
             %td
               :ruby
@@ -48,5 +51,5 @@
               .progress{style: 'margin-bottom:0'}
                 - keys.each_with_index do |key,index|
                   - val = dev[key]
-                  .progress-bar{style:"width: #{perc[index].round(2)}%", title: "#{names[index]}: #{val} (#{perc[index].round(2)}%)", class: "progress-bar-#{classes[index]}"}
+                  .progress-bar{id: "#{did}_#{names[index].downcase}",style:"width: #{perc[index].round(2)}%", data:{tooltip: "#{val} #{names[index].downcase} (#{perc[index].round(2)}%)"}, class: "progress-bar-#{classes[index]}"}
             %td=dev[:utility]

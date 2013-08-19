@@ -1,4 +1,5 @@
 .span12
+
   :javascript
       $(function(){
           Highcharts.setOptions({global:{useUTC: false}});
@@ -16,7 +17,7 @@
             }, yAxis: {
               min: 0,
               title: {
-                text: 'MHash/s'
+                text: 'M#{t('title.hps')}'
               }
             }, legend: {
               enabled: false
@@ -30,7 +31,7 @@
                   val = val / 1000.0;
                 }
                 val = val.toFixed(2);
-                return Highcharts.dateFormat("%B %e %Y %H:%M", this.x) + ', <b>' + val + pres[pre] + 'hash/s';
+                return Highcharts.dateFormat("%B %e %Y %H:%M", this.x) + ', <b>' + val + pres[pre] + '#{t('title.hps')}';
               }
             }, exporting: {
               enabled: true

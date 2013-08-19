@@ -1,5 +1,107 @@
-# Sample localization file for English. Add more files in this directory for other locales.
-# See https://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
-
 en:
-  hello: "Hello world"
+  status:
+    alive: "Alive"
+    accepted: "Accepted"
+    rejected: "Rejected"
+    stale: "Stale"
+    discarded: "Discarded"
+    hardware_errors: "Hardware Errors"
+  pool:
+    singular: "pool"
+    plural: "pools"
+    action:
+      enable: 'Enable pool'
+      disable: 'Disable pool'
+      progress:
+        priority: 'Changing pool priority'
+        toggle: 'Toggling pool'
+        delete: 'Deleting pool'
+      add: "Add Pool"
+    confirm:
+      delete: 'Are you sure you want to delete this pool?'
+    none: "No pool information available"
+  device:
+    singular: "device"
+    plural: "devices"
+    type:
+      cpu: "CPU"
+      gpu: "GPU"
+      pga: "FPGA"
+      unknown: "Unknown device type '%s'"
+    none: "No device information available"
+    action:
+      progress:
+        toggle: "Toggling device"
+      enable: "Enable device"
+      disable: "Disable device"
+  menu:
+    home: "Home"
+  title:
+    alert: "Alert"
+    donate: "Donate"
+    message: "Message"
+    priority: "Priority"
+    url: "URL"
+    user: "User"
+    status: "Status"
+    options: "Options"
+    name: "Name"
+    type: "Type"
+    temperature: "Temp"
+    avg_5s: "5 second average"
+    utility: "Utility"
+    hps: "Hash/s"
+    charts: "Charts"
+    range: "Range"
+    interval: "Interval"
+    uptime: "Uptime"
+    speed: "Speed"
+  time:
+    seconds: 'seconds'
+    minutes: 'minutes'
+    hours: 'hours'
+    days: 'days'
+    weeks: 'weeks'
+    months: 'months'
+    years: 'years'
+  message:
+    connecting: "Connecting to miner..."
+    wait: 'Please wait...'
+    no_privileges: "You don't have the privileges to perform this action"
+    donating: "Can't perform this action while miner is in donation mode"
+    not_applicable: "N/A"
+  verb:
+    delete: 'delete'
+    donate: "donate"
+    close: "close"
+    cancel: "cancel"
+    ok: "ok"
+    save: "save"
+  donation_content: "All donations will go towards development of applications relating to bitcoin.  Thanks!"
+  err:
+    miner:
+      connect_fail: "Failed to connect to miner at %s:%d"
+      '51': "You can't disable the only active pool"
+      '66': "You can't delete the only active pool"
+      '67': "You can't remove an active pool"
+  footer:
+    link:
+      contact: "Message Me"
+      hire: "Hire Me"
+      fork: "Fork Me"
+    content: "is free software created by %s in his spare time.  If you like it then"
+    stats: "Page rendered in %2.4f seconds | Powered by %s"
+  form:
+    pool:
+      settings:
+        title: "Pool settings"
+        url:
+          name: URL
+          placeholder: Enter URL
+          help: Format <host>:<port> e.g. pool.50btc.com:8332
+        user:
+          name: Worker
+          placeholder: Enter name
+        pass:
+          name: Password
+          placeholder: Enter password

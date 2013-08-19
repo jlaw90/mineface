@@ -22,6 +22,11 @@ a.disabled {
   }
 }
 
+a.disabled [data-tooltip],
+a[data-tooltip].disabled {
+  pointer-events: auto;
+}
+
 @import 'font-awesome';
 @import "twitter/bootstrap";
 
@@ -29,8 +34,8 @@ body {
   padding-top: 90px;
 }
 
-a:hover > i {
-  // No underline on icons within a link
+a:hover .no_underline,
+a:hover .no_underline {
   text-decoration: none;
 }
 
@@ -61,4 +66,10 @@ footer {
 
 .alert-overlay {
   text-align: center;
+}
+
+.panel-heading {
+  h3.panel-title {
+    font-size: 2em;
+  }
 }

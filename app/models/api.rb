@@ -1,12 +1,7 @@
 class Api # A very simple api wrapper that caches results
   require 'socket'
   require 'json'
-
-  Messages = {# Todo: define user-friendly error messages, maybe even localise
-              51 => "You can't disable the only active pool",
-              66 => "You can't delete the only active pool",
-              67 => "Can't remove this pool as it's currently active"
-  }
+  require 'i18n'
 
   attr_accessor :port, :host
 
@@ -38,11 +33,10 @@ class Api # A very simple api wrapper that caches results
     begin
       s = TCPSocket.open(@host, @port)
     rescue
-      raise "Failed to connect to miner at #@host:#@port"
+      raise I18n.translate('err.miner.connect_fail') % [@host, @port]
     end
     s.write req
     data = s.read.strip
-    # Okay, nasty, can have control character.... let's strip 'em!
     data = data.chars.map { |c| c.ord >= 32 ? c : "\\u#{'%04x' % c.ord}" }.join
     data = JSON.parse(data)
     s.close
@@ -60,7 +54,7 @@ class Api # A very simple api wrapper that caches results
       when 'W'
         logger.info "Warning from API [#{c}]: #{msg}"
       else
-        raise Messages[c] || "#{c}: #{msg}"
+        raise I18n.translate("err.miner.#{c}") || "#{c}: #{msg}"
     end
 
     data = sanitise(data)
@@ -111,7 +105,6 @@ class Api # A very simple api wrapper that caches results
       types = [:cpu, :gpu, :pga, :asc]
       types.each do |type|
         next unless dev.has_key?(type)
-        raise 'Device with multiple types' if dev.has_key?(:type)
         dev[:type] = type
         dev[:id] = dev[dev[:type]]
       end
@@ -133,7 +126,7 @@ class Api # A very simple api wrapper that caches results
       when :asc then
         ascenable(id)
       else
-        raise "I don't know how to enable devices of type #{type}"
+        raise I18n.translate('device.type.unknown') % type
     end
   end
 
@@ -146,7 +139,7 @@ class Api # A very simple api wrapper that caches results
       when :asc then
         ascdisable(id)
       else
-        raise "I don't know how to disable devices of type #{type}"
+        raise I18n.translate('device.type.unknown') % type
     end
   end
 

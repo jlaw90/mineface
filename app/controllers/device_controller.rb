@@ -1,21 +1,15 @@
 class DeviceController < ApplicationController
   def show
-    json_protect do
-      miner.device(params[:type].to_sym, params[:id].to_i)
-    end
+    miner.device(params[:type].to_sym, params[:id].to_i)
   end
 
   def disable
-    json_protect do
-      miner.disable_device(params[:type].to_sym, params[:id].to_i)
-      nil
-    end
+    miner.disable_device(params[:type].to_sym, params[:id].to_i)
+    nil
   end
 
   def enable
-    json_protect do
-      miner.enable_device(params[:type].to_sym, params[:id].to_i)
-      nil
-    end
+    miner.enable_device(params[:type].to_sym, params[:id].to_i)
+    nil
   end
 end

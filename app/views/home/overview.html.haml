@@ -1,10 +1,8 @@
 - unless @devs.empty?
   %span.pad-horizontal
     %i.icon-time
-    Uptime:
-    =time_ago_in_words(Time.now.to_i - @sum[:elapsed])
+    ="#{t('title.uptime')}: #{time_ago_in_words(Time.now.to_i - @sum[:elapsed])}"
   |
   %span.pad-horizontal
     %i.icon-signal
-    Speed:
-    =@speed
+    ="#{t('title.speed')}: #@speed"
