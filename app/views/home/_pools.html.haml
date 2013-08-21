@@ -1,7 +1,8 @@
 -names = [t('status.accepted'), t('status.rejected'), t('status.stale'), t('status.discarded')]
+- @connected = @pools != nil
 - @pools ||= []
 - @pools.sort! {|a,b| a[:priority] <=> b[:priority]}
-.panel{'data-tooltip-container' => 'true'}
+.panel.panel-default{'data-tooltip-container' => 'true'}
   .panel-heading
     %h3.panel-title
       %i.icon-globe
@@ -9,78 +10,79 @@
       %small.text-muted#devices_overview
         - unless @pools.empty?
           =pluralize(@pools.length, t('pool.singular'), t('pool.plural'))
-  %table.table.table-striped.panel-content
-    %thead
-      %tr
-        %th.text-center=t('title.priority')
-        %th=t('title.url')
-        %th=t('title.user')
-        %th=t('title.status')
-        %th=names.join('/')
-        %th.text-center=t('title.options')
-    %tbody
-      -if @pools.length == 0
+  .panel-content
+    %table.table.table-striped
+      %thead
         %tr
-          %td{colspan:6}
-            .text-center=t('pool.none')
-      -else
-        -@pools.each do |pool|
-          - pid = "pool#{pool[:id]}"
-          %tr{class: pool[:status] == :alive ? :success: pool[:status] == :disabled ? :warning: :danger, id: pid}
-            %td.text-center
-              =pool[:priority]
-              %span.priority-change{style: 'position: relative'}
-                - if pool[:priority] != 0 and !read_only
-                  =link_to pool_up_path(pool[:id], :json), remote: true, id: "#{pid}_up", data: {refresh: 'pools', perform: t('pool.action.progress.priority')}, class: 'pri-up' do
-                    %i.icon-angle-up.no_underline
-                -else
-                  %a.disabled.pri-up{id: "#{pid}_up", data: {tooltip: pool[:priority] == 0? nil: read_only_reason}}
-                    %i.icon-angle-up.no_underline
-                - if pool[:priority] < @pools.length-1 and !read_only
-                  =link_to pool_down_path(pool[:id], :json), remote: true, id: "#{pid}_down", data: {refresh: 'pools', perform: t('pool.action.progress.priority')}, class: 'pri-down' do
-                    %i.icon-angle-down.no_underline
-                - else
-                  %a.disabled.pri-down{id: "#{pid}_down",data: {tooltip: pool[:priority] >= @pools.length-1 ? nil: read_only_reason}}
-                    %i.icon-angle-down.no_underline
+          %th.text-center=t('title.priority')
+          %th=t('title.url')
+          %th=t('title.user')
+          %th=t('title.status')
+          %th=names.join('/')
+          %th.text-center=t('title.options')
+      %tbody
+        -if @pools.length == 0
+          %tr
+            %td{colspan:6}
+              .text-center=t('pool.none')
+        -else
+          -@pools.each do |pool|
+            - pid = "pool#{pool[:id]}"
+            %tr{class: pool[:status] == :alive ? :success: pool[:status] == :disabled ? :warning: :danger, id: pid}
+              %td.text-center
+                =pool[:priority]
+                %span.priority-change{style: 'position: relative'}
+                  - if pool[:priority] != 0 and !read_only
+                    =link_to pool_up_path(pool[:id], :json), remote: true, id: "#{pid}_up", data: {'scheduler-exec' => 'pools', perform: t('pool.action.progress.priority')}, class: 'pri-up' do
+                      %i.icon-angle-up.no_underline
+                  -else
+                    %a.disabled.pri-up{id: "#{pid}_up", data: {tooltip: pool[:priority] == 0? nil: read_only_reason}}
+                      %i.icon-angle-up.no_underline
+                  - if pool[:priority] < @pools.length-1 and !read_only
+                    =link_to pool_down_path(pool[:id], :json), remote: true, id: "#{pid}_down", data: {'scheduler-exec' => 'pools', perform: t('pool.action.progress.priority')}, class: 'pri-down' do
+                      %i.icon-angle-down.no_underline
+                  - else
+                    %a.disabled.pri-down{id: "#{pid}_down",data: {tooltip: pool[:priority] >= @pools.length-1 ? nil: read_only_reason}}
+                      %i.icon-angle-down.no_underline
 
-            %td{id: "#{pid}_url"}=pool[:url]
-            %td{id: "#{pid}_user"}=pool[:user]
-            %td=t("status.#{pool[:status].to_s.underscore}")
-            %td
-              :ruby
-                keys = [:accepted, :rejected, :stale, :discarded]
-                classes = %w(success warning warning danger)
-                vals = keys.map{|k| pool[k]}
-                total = vals.reduce(:+)
-                perc = vals.map{|v| (v.to_f/total) * 100.0}
-              .progress{style: 'margin-bottom: 0'}
-                - keys.each_with_index do |key,index|
-                  .progress-bar{id: "pool#{pool[:id]}_#{names[index].downcase}",style:"width: #{perc[index].round(2)}%", data:{tooltip: "#{names[index]}: #{vals[index]} (#{perc[index].round(2)}%)"}, class: "progress-bar-#{classes[index]}"}
-            %td.text-center
-              %span.option-link
-                - icn = "icon-check#{pool[:status] == :disabled ? '-empty': ''}"
-                - if read_only
-                  %a.disabled{id: "#{pid}_toggle", data:{tooltip: read_only_reason}}<>
-                    %i{class: "#{icn} no_underline"}<>
-                - else
-                  =link_to(pool[:status] == :disabled ? enable_pool_path(pool[:id], :json): disable_pool_path(pool[:id], :json), remote: true, id: "pool#{pool[:id]}_toggle", data: {refresh: 'pools', perform: t('pool.action.progress.toggle'), tooltip: pool[:status] == :disabled ? t('pool.action.enable'): t('pool.action.disable')}) do
-                    %i{class: "#{icn} no_underline"}<>
-              %span.option-link
-                - if read_only
-                  %a.disabled{id: "#{pid}_delete",data:{tooltip: read_only_reason}}<>
-                    %i.icon-trash.no_underline
-                - else
-                  =link_to(delete_pool_path(pool[:id], :json), remote: true, id: "pool#{pool[:id]}_delete", data: {confirm: t('pool.confirm.delete'), refresh: 'pools', perform: t('pool.action.progress.delete'), tooltip: t('verb.delete').titleize}) do
-                    %span<>
+              %td{id: "#{pid}_url"}=pool[:url]
+              %td{id: "#{pid}_user"}=pool[:user]
+              %td=t("status.#{pool[:status].to_s.underscore}")
+              %td
+                :ruby
+                  keys = [:accepted, :rejected, :stale, :discarded]
+                  classes = %w(success warning warning danger)
+                  vals = keys.map{|k| pool[k]}
+                  total = vals.reduce(:+)
+                  perc = vals.map{|v| (v.to_f/total) * 100.0}
+                .progress{style: 'margin-bottom: 0'}
+                  - keys.each_with_index do |key,index|
+                    .progress-bar{id: "pool#{pool[:id]}_#{names[index].downcase}",style:"width: #{perc[index].round(2)}%", data:{tooltip: "#{names[index]}: #{vals[index]} (#{perc[index].round(2)}%)"}, class: "progress-bar-#{classes[index]}"}
+              %td.text-center
+                %span.option-link
+                  - icn = "icon-check#{pool[:status] == :disabled ? '-empty': ''}"
+                  - if read_only
+                    %a.disabled{id: "#{pid}_toggle", data:{tooltip: read_only_reason}}<>
+                      %i{class: "#{icn} no_underline"}<>
+                  - else
+                    =link_to(pool[:status] == :disabled ? enable_pool_path(pool[:id], :json): disable_pool_path(pool[:id], :json), remote: true, id: "pool#{pool[:id]}_toggle", data: {'scheduler-exec' => 'pools', perform: t('pool.action.progress.toggle'), tooltip: pool[:status] == :disabled ? t('pool.action.enable'): t('pool.action.disable')}) do
+                      %i{class: "#{icn} no_underline"}<>
+                %span.option-link
+                  - if read_only
+                    %a.disabled{id: "#{pid}_delete",data:{tooltip: read_only_reason}}<>
                       %i.icon-trash.no_underline
-  .panel-body
-    - if read_only
-      %a#new_pool.btn.btn-primary.disabled{data: {tooltip: read_only_reason}}
-        %i.icon-plus
-        =t('pool.action.add')
-    - else
-      =link_to(new_pool_path, id: 'new_pool', class: 'btn btn-primary', data: {toggle: 'modal', target: '#pool_settings'}, onclick: 'return false') do
-        %i.icon-plus
-        =t('pool.action.add')
-      %script
-        $('#new_pool').attr('href', $('#new_pool').data('target'));
+                  - else
+                    =link_to(delete_pool_path(pool[:id], :json), remote: true, id: "pool#{pool[:id]}_delete", data: {confirm: t('pool.confirm.delete'), 'scheduler-exec' => 'pools', perform: t('pool.action.progress.delete'), tooltip: t('verb.delete').titleize}) do
+                      %span<>
+                        %i.icon-trash.no_underline
+    .panel-body
+      - if read_only
+        %a#new_pool.btn.btn-primary.disabled{data: {tooltip: read_only_reason}}
+          %i.icon-plus
+          =t('pool.action.add')
+      - else
+        =link_to(new_pool_path, id: 'new_pool', class: 'btn btn-primary', data: {toggle: 'modal', target: '#pool_settings'}, onclick: 'return false') do
+          %i.icon-plus
+          =t('pool.action.add')
+        %script
+          $('#new_pool').attr('href', $('#new_pool').data('target'));

@@ -70,6 +70,7 @@ en:
     no_privileges: "You don't have the privileges to perform this action"
     donating: "Can't perform this action while miner is in donation mode"
     not_applicable: "N/A"
+    miner_unavailable: "Miner is not connected"
   verb:
     delete: 'delete'
     donate: "donate"

@@ -60,7 +60,7 @@ class ApplicationController < ActionController::Base
       respond_to do |format|
         format.html {
           if request.local?
-            render template: 'error/500'
+            raise e # Render pretty rails trace
           else
             render file: 'public/500.html', layout: false
           end
@@ -83,6 +83,8 @@ class ApplicationController < ActionController::Base
 
   def read_only_reason
     case
+      when !miner.available? then
+        t('message.miner_unavailable')
       when !privileged? then
         t('message.no_privileges')
       when DonationHelper.donate_mode? then

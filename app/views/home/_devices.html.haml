@@ -1,6 +1,6 @@
 -names = [t('status.accepted'), t('status.rejected'), t('status.hardware_errors')]
 - @devs ||= []
-.panel{'data-tooltip-container' => 'true'}
+.panel.panel-default{'data-tooltip-container' => 'true'}
   .panel-heading
     %h3.panel-title
       %i.icon-hdd
@@ -37,7 +37,7 @@
             %td
               =t("status.#{status}").titleize
               -if dev[:type] != :cpu && privileged?
-                =link_to(status == :disabled ? enable_device_path(dev[:type], dev[:id], :json): disable_device_path(dev[:type], dev[:id], :json), remote: true, data: {refresh: 'devs', perform: t('device.action.progress.toggle')}) do
+                =link_to(status == :disabled ? enable_device_path(dev[:type], dev[:id], :json): disable_device_path(dev[:type], dev[:id], :json), remote: true, data: {'scheduler-exec' => 'devs', perform: t('device.action.progress.toggle')}) do
                   %i{class: "no_underline icon-check#{status == :disabled ? '-empty': ''}", title: status == :disabled ? t('device.action.enable'): t('device.action.disable')}<>
             %td= dev[:temperature].nil?? t('message.not_applicable'): dev[:temperature].round(2)
             %td=mhash_to_s(dev[:mhs_5s])

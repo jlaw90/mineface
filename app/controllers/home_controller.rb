@@ -19,20 +19,18 @@ class HomeController < ApplicationController
     @sum = miner.summary
     @ver = miner.version
     @speed = mhash_to_s(@devs.map { |dev| dev[:mhs_5s] }.reduce(:+))
-    render layout: false
+    render layout: false, partial: 'home/overview', formats: [:html]
   end
 
   def devices
     # Get device json data
-    miner.devices
     @devs = miner.devices
-    render layout: false, partial: 'devices'
+    render layout: false, partial: 'devices', formats: [:html]
   end
 
   def pools
     @pools = miner.pools
-    miner.summary
-    render layout: false, partial: 'pools'
+    render layout: false, partial: 'pools', formats: [:html]
   end
 
   private

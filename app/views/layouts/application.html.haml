@@ -6,7 +6,7 @@
     =javascript_include_tag 'application', params[:controller]
     =csrf_meta_tags
   %body
-    .navbar.navbar-fixed-top
+    .navbar.navbar-fixed-top.navbar-inverse
       .container
         %a.navbar-brand=app_name
         %button.navbar-toggle{'data-toggle' => :collapse, 'data-target' => '.navbar-responsive-collapse'}
@@ -18,46 +18,12 @@
             %li.active
               %a{href: '#'}=t('menu.home')
         .navbar-text.pull-right#overview
-          =t('message.connecting')
+          #overview_inner
+            =t('message.connecting')
     .container
-      .modal.fade#alert_modal
-        .modal-dialog
-          .modal-content.alert
-            .modal-header
-              %h4
-                %i.icon-bell-alt
-                %span#alert-title{'data-default' => t('title.alert')}=t('title.alert')
-                %button.close{'data-dismiss' => 'modal', 'aria-hidden' => true} &times;
-            .modal-body#alert_container
-            .modal-footer
-              / Todo: previous, next, dismiss
       =yield
-    .modal.fade#message-modal
-      .modal-dialog
-        .modal-content
-          .modal-header
-            %h4
-              %i#message-icon.icon-info-sign
-              %span#message-title{'data-default' => t('title.message')}=t('title.message')
-              %button.close{'data-dismiss' => 'modal', 'data-target' => '#message-modal', 'aria-hidden' => true} &times;
-          .modal-body#message
-          .modal-footer
-            %button#message-ok.btn.btn-primary{'data-dismiss' => 'modal', 'aria-hidden' => true}=t('verb.ok').titleize
-            %button#message-cancel.btn.btn-default{'data-dismiss' => 'modal', 'aria-hidden' => true}=t('verb.cancel').titleize
 
-    .modal.fade#progress_modal
-      .modal-dialog
-        .modal-content
-          .modal-header
-            %h4
-              %i.icon-cogs
-              %span#wait-message{'data-default' => t('message.wait')}
-                =t('message.wait')
-          .modal-body
-            .progress.progress-striped.active
-              .progress-bar{style: 'width: 100%'}
-                %span#wait-message{'data-default' => t('message.wait')}
-                  =t('message.wait')
+    =render partial: '/modals'
 
     .modal.fade#donate_modal
       .modal-dialog

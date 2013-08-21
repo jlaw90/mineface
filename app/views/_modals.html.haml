@@ -1,0 +1,26 @@
+.modal.fade#message-modal{'data-modal-top' => true}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %h4
+          %i#message-icon.icon-info-sign
+          %span#message-title{'data-default' => t('title.message')}=t('title.message')
+          %button.close{'data-dismiss' => 'modal', 'data-target' => '#message-modal', 'aria-hidden' => true} &times;
+      .modal-body#message
+      .modal-footer
+        %button#message-ok.btn.btn-primary{'data-dismiss' => 'modal', 'aria-hidden' => true}=t('verb.ok').titleize
+        %button#message-cancel.btn.btn-default{'data-dismiss' => 'modal', 'aria-hidden' => true}=t('verb.cancel').titleize
+
+.modal.fade#progress_modal{'data-modal-top' => true}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %h4
+          %i.icon-cogs
+          %span#wait-message{'data-default' => t('message.wait')}
+            =t('message.wait')
+      .modal-body
+        .progress.progress-striped.active
+          .progress-bar{style: 'width: 100%'}
+            %span#wait-message{'data-default' => t('message.wait')}
+              =t('message.wait')

@@ -1,0 +1,8 @@
+- unless @devs.empty?
+  %span#uptime.pad-horizontal{data: {tooltip: 't', placement: 'auto right'}}
+    %i.icon-time
+    ="#{t('title.uptime')}: #{time_ago_in_words(@sum[:elapsed].seconds.ago)}"
+  |
+  %span.pad-horizontal
+    %i.icon-signal
+    ="#{t('title.speed')}: #{@speed}"

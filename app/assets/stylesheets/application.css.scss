@@ -9,10 +9,13 @@
  * compiled file, but it's generally better to create a new file per style scope.
  *
  *= require_self
+ *= require font-awesome
  *= require_tree .
  */
 
 @import 'twitter/bootstrap/variables';
+@import 'twitter/bootstrap';
+@import 'twitter/bootstrap/theme';
 
 a.disabled {
   // Custom case for link with no btn classes being disabled
@@ -26,9 +29,6 @@ a.disabled [data-tooltip],
 a[data-tooltip].disabled {
   pointer-events: auto;
 }
-
-@import 'font-awesome';
-@import "twitter/bootstrap";
 
 body {
   padding-top: 90px;

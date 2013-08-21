@@ -5,17 +5,32 @@ class Api # A very simple api wrapper that caches results
 
   attr_accessor :port, :host
 
+  def privileged?
+    if @privileged.nil?
+      begin
+        self.privileged # Will error if we can't access privileged commands
+        @privileged = true
+      rescue
+        @privileged = false
+      end
+    end
+    @privileged
+  end
+
   def self.create
     @@inst ||= Api.new(ENV['api_host'] || 'localhost', (ENV['api_port'] || 4028).to_i)
   end
 
-  def privileged?
-    begin
-      self.privileged # Will error if we can't access privileged commands
-      return true
-    rescue
-      return false
+  def available?
+    if @available.nil?
+      begin
+        TCPSocket.open(@host, @port).close
+        @available = true
+      rescue
+        @available = false
+      end
     end
+    @available
   end
 
   def initialize(host, port)
