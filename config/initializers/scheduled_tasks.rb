@@ -1,4 +1,4 @@
-scheduler = Rufus::Scheduler.start_new
+scheduler = Rufus::Scheduler.new
 
 # Add a datapoint to redis
 scheduler.every("1m") do
